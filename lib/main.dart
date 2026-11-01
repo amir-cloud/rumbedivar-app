@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+import 'screens/home_page.dart';
+import 'screens/login_page.dart';
+import 'services/auth_service.dart';
+
 void main() {
   runApp(const MainApp());
 }
@@ -24,6 +28,28 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _decide();
+  }
+
+  Future<void> _decide() async {
+    await Future.delayed(const Duration(seconds: 2));
+    if (!mounted) return;
+    final token = await AuthService().getToken();
+    if (!mounted) return;
+    if (token != null && token.isNotEmpty) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const HomePage()),
+      );
+    } else {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const LoginPage()),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
