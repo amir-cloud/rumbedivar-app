@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/api_client.dart';
+import '../models/customer.dart';
 import '../models/landing.dart';
 import '../models/order.dart';
 import '../models/product.dart';
@@ -9,6 +10,7 @@ import '../models/user.dart';
 import '../services/auth_service.dart';
 import '../services/catalog_service.dart';
 import '../services/checkout_service.dart';
+import '../services/orders_service.dart';
 import '../services/store_service.dart';
 
 final apiClientProvider = Provider<ApiClient>((ref) => ApiClient());
@@ -135,4 +137,29 @@ final checkoutServiceProvider = Provider<CheckoutService>(
 final gatewaysProvider =
     FutureProvider<List<PaymentGateway>>((ref) async {
   return ref.watch(checkoutServiceProvider).offlineGateways();
+});
+
+final ordersServiceProvider = Provider<OrdersService>(
+    (ref) => OrdersService(ref.watch(apiClientProvider)));
+
+final customerServiceProvider = Provider<CustomerService>(
+    (ref) => CustomerService(ref.watch(apiClientProvider)));
+
+final ordersProvider =
+    FutureProvider<List<OrderSummary>>((ref) async {
+  return ref.watch(ordersServiceProvider).getOrders();
+});
+
+final orderDetailProvider =
+    FutureProvider.family<OrderDetail?, int>((ref, id) async {
+  return ref.watch(ordersServiceProvider).getOrder(id);
+});
+
+final orderStatusesProvider =
+    FutureProvider<Map<String, String>>((ref) async {
+  return ref.watch(ordersServiceProvider).getStatuses();
+});
+
+final customerProvider = FutureProvider<Customer?>((ref) async {
+  return ref.watch(customerServiceProvider).getCustomer();
 });

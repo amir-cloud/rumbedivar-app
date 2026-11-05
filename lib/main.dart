@@ -8,7 +8,10 @@ import 'screens/catalog_page.dart';
 import 'screens/checkout_page.dart';
 import 'screens/home_page.dart';
 import 'screens/login_page.dart';
+import 'screens/order_detail_page.dart';
+import 'screens/orders_page.dart';
 import 'screens/product_detail_page.dart';
+import 'screens/profile_page.dart';
 import 'screens/register_page.dart';
 import 'screens/splash_page.dart';
 
@@ -46,14 +49,17 @@ GoRouter _router() {
           builder: (_, __) => const CheckoutPage()),
       GoRoute(
           path: '/orders',
-          builder: (_, __) => const PlaceholderPage(title: 'سفارش‌ها')),
+          builder: (_, __) => const OrdersPage()),
       GoRoute(
           path: '/orders/:id',
-          builder: (_, s) => PlaceholderPage(
-              title: 'سفارش ${s.pathParameters['id']}')),
+          builder: (_, s) {
+            final id =
+                int.tryParse(s.pathParameters['id'] ?? '') ?? 0;
+            return OrderDetailPage(id: id);
+          }),
       GoRoute(
           path: '/profile',
-          builder: (_, __) => const PlaceholderPage(title: 'پروفایل')),
+          builder: (_, __) => const ProfilePage()),
     ],
     errorBuilder: (_, s) =>
         FriendlyErrorPage(message: s.error?.toString() ?? 'خطا'),
