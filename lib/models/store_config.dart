@@ -49,11 +49,13 @@ class AppConfig {
   final bool enableRegistration;
   final bool orderNotesEnabled;
   final Map<String, bool> apiToggles;
+  final Map<String, bool> filterFlags;
 
   const AppConfig({
     this.enableRegistration = true,
     this.orderNotesEnabled = true,
     this.apiToggles = const {},
+    this.filterFlags = const {},
   });
 
   factory AppConfig.fromJson(Map<String, dynamic> json) {
@@ -71,6 +73,26 @@ class AppConfig {
         }
       });
     }
+    // woocommerce.filter_* flags drive catalog chips (Step 3).
+    final filters = <String, bool>{};
+    void absorb(Map? m, [String prefix = '']) {
+      m?.forEach((k, v) {
+        final key = '$prefix$k'.toString();
+        if (v is bool) {
+          filters[key] = v;
+        } else if (v is Map) {
+          absorb(v, '$key.');
+        }
+      });
+    }
+
+    absorb(data['woocommerce'] as Map?);
+    absorb(data['filters'] as Map?);
+    data.forEach((k, v) {
+      if (k.toString().startsWith('filter_') && v is bool) {
+        filters[k.toString()] = v;
+      }
+    });
     return AppConfig(
       enableRegistration:
           (data['enable_registration'] ?? data['enableRegistration'] ?? true)
@@ -81,8 +103,23 @@ class AppConfig {
                   as bool? ??
               true,
       apiToggles: toggles,
+      filterFlags: filters,
     );
   }
 
   bool isDisabled(String key) => apiToggles[key] == false;
+
+  /// Chip visible unless server explicitly disables filter_*.
+  bool filterOn(String name, {bool fallback = true}) {
+    for (final e in filterFlags.entries) {
+      final k = e.key.toLowerCase();
+      if (k == 'filter_$name' ||
+          k.endsWith('.$name') ||
+          k.endsWith('_$name') ||
+          k == name) {
+        return e.value;
+      }
+    }
+    return fallback;
+  }
 }

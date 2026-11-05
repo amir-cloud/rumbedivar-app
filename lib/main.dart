@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'core/router_support.dart';
+import 'screens/catalog_page.dart';
 import 'screens/discreet_checkout_page.dart';
 import 'screens/home_page.dart';
 import 'screens/login_page.dart';
+import 'screens/product_detail_page.dart';
 import 'screens/register_page.dart';
 import 'screens/splash_page.dart';
 
@@ -28,12 +30,14 @@ GoRouter _router() {
       GoRoute(path: '/home', builder: (_, __) => const HomePage()),
       GoRoute(
           path: '/catalog',
-          builder: (_, __) =>
-              const PlaceholderPage(title: 'کاتالوگ')),
+          builder: (_, __) => const CatalogPage()),
       GoRoute(
           path: '/product/:id',
-          builder: (_, s) => PlaceholderPage(
-              title: 'محصول ${s.pathParameters['id']}')),
+          builder: (_, s) {
+            final id =
+                int.tryParse(s.pathParameters['id'] ?? '') ?? 0;
+            return ProductDetailPage(id: id);
+          }),
       GoRoute(
           path: '/cart',
           builder: (_, __) => const PlaceholderPage(title: 'سبد خرید')),
