@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../services/auth_service.dart';
-import 'home_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -40,9 +40,8 @@ class _LoginPageState extends State<LoginPage> {
     if (!mounted) return;
     setState(() => _loading = false);
     if (result.success) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const HomePage()),
-      );
+      if (!mounted) return;
+      context.go('/home');
     } else {
       setState(() => _error = result.error ?? 'ورود ناموفق بود');
     }
@@ -159,7 +158,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(height: 16),
                     TextButton(
-                      onPressed: () {},
+                      onPressed: () => context.go('/register'),
                       child: const Text(
                         'ثبت نام',
                         style: TextStyle(color: Colors.white, decoration: TextDecoration.underline),

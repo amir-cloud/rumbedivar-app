@@ -1,104 +1,91 @@
-import 'dart:convert';
-
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
-
-import '../config/api_config.dart';
+import '../core/api_client.dart';
+import '../core/app_error.dart';
 import '../models/auth_result.dart';
 import '../models/user.dart';
 
+/// Auth backed by ApiClient (secure storage + 401->refresh retry).
+/// Keeps old public API so Login/Home keep compiling during migration.
 class AuthService {
-  static const String _tokenKey = 'auth_token';
+  AuthService({ApiClient? api}) : _api = api ?? ApiClient();
+  final ApiClient _api;
 
-  String get _base => wpBaseUrl.replaceAll(RegExp(r'/+$'), '');
-  String get _apiBase => '$_base/wp-json/$wpApiNamespace';
+  Future<String?> getToken() => _api.readToken();
 
-  Future<SharedPreferences> get _prefs async => SharedPreferences.getInstance();
+  Future<void> saveToken(String token) => _api.saveToken(token);
 
-  Future<String?> getToken() async {
-    final prefs = await _prefs;
-    return prefs.getString(_tokenKey);
-  }
-
-  Future<void> saveToken(String token) async {
-    final prefs = await _prefs;
-    await prefs.setString(_tokenKey, token);
-  }
-
-  Future<void> clearToken() async {
-    final prefs = await _prefs;
-    await prefs.remove(_tokenKey);
-  }
+  Future<void> clearToken() => _api.clearToken();
 
   Future<AuthResult> login(String username, String password) async {
     try {
-      final res = await http.post(
-        Uri.parse('$_apiBase/login'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'username': username, 'password': password}),
+      final body = await _api.post(
+        '/login',
+        {'username': username, 'password': password},
+        auth: false,
       );
-      final body = jsonDecode(res.body);
       if (body is Map<String, dynamic>) {
-        if (res.statusCode >= 200 && res.statusCode < 300 && body['success'] == true) {
+        if (body['success'] == true) {
           final result = AuthResult.fromJson(body);
-          if (result.token != null) {
-            await saveToken(result.token!);
-          }
+          if (result.token != null) await saveToken(result.token!);
           return result;
         }
-        return AuthResult.failure(body['message']?.toString() ?? 'Login failed');
+        return AuthResult.failure(
+            body['message']?.toString() ?? 'Login failed');
       }
       return AuthResult.failure('Unexpected response');
+    } on AppError catch (e) {
+      if (e.code == 'rate_limited') {
+        return AuthResult.failure(
+            'تلاش زیاد — لطفا چند دقیقه بعد دوباره امتحان کنید');
+      }
+      return AuthResult.failure(e.message);
     } catch (e) {
       return AuthResult.failure('Network error: $e');
     }
   }
 
-  Future<AuthResult> register(String username, String email, String password) async {
+  Future<AuthResult> register(
+      String username, String email, String password) async {
     try {
-      final res = await http.post(
-        Uri.parse('$_apiBase/register'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'username': username, 'email': email, 'password': password}),
+      final body = await _api.post(
+        '/register',
+        {'username': username, 'email': email, 'password': password},
+        auth: false,
       );
-      final body = jsonDecode(res.body);
       if (body is Map<String, dynamic>) {
-        if (res.statusCode >= 200 && res.statusCode < 300 && body['success'] == true) {
+        if (body['success'] == true) {
           final result = AuthResult.fromJson(body);
-          if (result.token != null) {
-            await saveToken(result.token!);
-          }
+          if (result.token != null) await saveToken(result.token!);
           return result;
         }
-        return AuthResult.failure(body['message']?.toString() ?? 'Registration failed');
+        return AuthResult.failure(
+            body['message']?.toString() ?? 'Registration failed');
       }
       return AuthResult.failure('Unexpected response');
+    } on AppError catch (e) {
+      if (e.code == 'registration_disabled') {
+        return AuthResult.failure('ثبت‌نام فعلا غیرفعال است');
+      }
+      return AuthResult.failure(e.message);
     } catch (e) {
       return AuthResult.failure('Network error: $e');
     }
   }
 
   Future<User?> getMe() async {
-    final token = await getToken();
-    if (token == null || token.isEmpty) return null;
     try {
-      final res = await http.get(
-        Uri.parse('$_apiBase/me'),
-        headers: {'Authorization': 'Bearer $token'},
-      );
-      if (res.statusCode == 200) {
-        final body = jsonDecode(res.body);
-        if (body is Map<String, dynamic> && body['user'] is Map<String, dynamic>) {
-          return User.fromJson(body['user'] as Map<String, dynamic>);
-        }
+      final body = await _api.get('/me');
+      if (body is Map<String, dynamic>) {
+        final u = body['user'] ?? body['data']?['user'];
+        if (u is Map<String, dynamic>) return User.fromJson(u);
+        if (body['id'] != null) return User.fromJson(body);
       }
+      return null;
+    } on AppError {
       return null;
     } catch (_) {
       return null;
     }
   }
 
-  Future<void> logout() async {
-    await clearToken();
-  }
+  Future<void> logout() => clearToken();
 }

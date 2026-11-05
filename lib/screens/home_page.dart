@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../models/user.dart';
 import '../services/app_lock_service.dart';
 import '../services/auth_service.dart';
-import 'discreet_checkout_page.dart';
-import 'login_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -43,10 +42,7 @@ class _HomePageState extends State<HomePage> {
   Future<void> _logout() async {
     await _auth.logout();
     if (!mounted) return;
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const LoginPage()),
-      (route) => false,
-    );
+    context.go('/login');
   }
 
   @override
@@ -79,11 +75,7 @@ class _HomePageState extends State<HomePage> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
-                        onPressed: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                              builder: (_) =>
-                                  const DiscreetCheckoutPage()),
-                        ),
+                        onPressed: () => context.go('/checkout'),
                         icon: const Icon(Icons.lock_outline),
                         label: const Text('تسویه حساب محرمانه (تست)'),
                       ),
