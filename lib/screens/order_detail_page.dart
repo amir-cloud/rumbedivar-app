@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../providers/app_providers.dart';
+import '../widgets/price.dart';
 
 /// Order detail with items + App Discount flag (Step 6).
 class OrderDetailPage extends ConsumerWidget {
@@ -13,6 +14,11 @@ class OrderDetailPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final detail = ref.watch(orderDetailProvider(id));
     final statuses = ref.watch(orderStatusesProvider);
+    final boot = ref.watch(bootProvider);
+    final currency = boot.maybeWhen(
+        data: (b) => b.store.currencySymbol, orElse: () => '');
+    final decimals =
+        boot.maybeWhen(data: (b) => b.store.numDecimals, orElse: () => 0);
     final labels = statuses.maybeWhen(
         data: (m) => m, orElse: () => const <String, String>{});
     return Scaffold(
@@ -81,7 +87,11 @@ class OrderDetailPage extends ConsumerWidget {
                           Text('تاریخ: ${o.date}'),
                           if (o.paymentMethod.isNotEmpty)
                             Text('پرداخت: ${o.paymentMethod}'),
-                          Text('جمع: ${o.total}'),
+                          PriceText(o.total,
+                              currency: currency,
+                              decimals: decimals,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.w700)),
                           if (o.appDiscountApplied)
                             const Text('تخفیف اپ اعمال شد ✓',
                                 style: TextStyle(
@@ -101,7 +111,9 @@ class OrderDetailPage extends ConsumerWidget {
                         title: Text(it.name),
                         subtitle:
                             Text('تعداد: ${it.quantity}'),
-                        trailing: Text('${it.total}'),
+                        trailing: PriceText(it.total,
+                            currency: currency,
+                            decimals: decimals),
                       ),
                     ),
                 ],

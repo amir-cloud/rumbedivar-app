@@ -2,27 +2,17 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart' as intl;
 
 import '../providers/app_providers.dart';
 import '../providers/cart_provider.dart';
+import '../widgets/app_nav.dart';
+import '../widgets/price.dart';
 
 /// Local cart page (Issue #2 Step 4).
 /// Kill-restart safe, clamped by max_quantity_per_item,
 /// gated by min_order_amount with Persian message.
 class CartPage extends ConsumerWidget {
   const CartPage({super.key});
-
-  String _fmt(double v, int decimals) {
-    try {
-      final f = intl.NumberFormat.decimalPattern('fa');
-      f.minimumFractionDigits = decimals;
-      f.maximumFractionDigits = decimals;
-      return f.format(v);
-    } catch (_) {
-      return '$v';
-    }
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -48,6 +38,7 @@ class CartPage extends ConsumerWidget {
             ),
         ],
       ),
+      bottomNavigationBar: const AppBottomNav(current: '/cart'),
       body: Directionality(
         textDirection: TextDirection.rtl,
         child: !cart.loaded
@@ -95,8 +86,9 @@ class CartPage extends ConsumerWidget {
                                 title: Text(it.name,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis),
-                                subtitle: Text(
-                                    '${_fmt(it.unitPrice, decimals)} $currency'),
+                                subtitle: PriceText(it.unitPrice,
+                                    currency: currency,
+                                    decimals: decimals),
                                 trailing: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
@@ -133,8 +125,10 @@ class CartPage extends ConsumerWidget {
                           crossAxisAlignment:
                               CrossAxisAlignment.stretch,
                           children: [
-                            Text(
-                              'جمع: ${_fmt(cart.subtotal, decimals)} $currency',
+                            PriceText(
+                              cart.subtotal,
+                              currency: currency,
+                              decimals: decimals,
                               style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700),
@@ -144,7 +138,7 @@ class CartPage extends ConsumerWidget {
                                 padding:
                                     const EdgeInsets.only(top: 8),
                                 child: Text(
-                                  'حداقل مبلغ سفارش ${_fmt(minOrder, decimals)} $currency است',
+                                  'حداقل مبلغ سفارش ${formatPrice(minOrder, currency: currency, decimals: decimals)} است',
                                   style: const TextStyle(
                                       color: Colors.red),
                                 ),

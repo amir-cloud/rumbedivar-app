@@ -6,6 +6,7 @@ import '../core/app_error.dart';
 import '../models/order.dart';
 import '../providers/app_providers.dart';
 import '../providers/cart_provider.dart';
+import '../widgets/price.dart';
 
 /// Real COD-only checkout (Issue #2 Step 5).
 /// Replaces the fake-door mock: billing + copy-to-shipping, offline
@@ -197,6 +198,8 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
         data: (b) => b.store.minOrderAmount, orElse: () => 0.0);
     final currency = boot.maybeWhen(
         data: (b) => b.store.currencySymbol, orElse: () => 'تومان');
+    final decimals =
+        boot.maybeWhen(data: (b) => b.store.numDecimals, orElse: () => 0);
     final blocked = cart.subtotal < minOrder;
 
     if (!cart.loaded) {
@@ -332,10 +335,11 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
               if (_ratesError != null)
                 Text(_ratesError!,
                     style: const TextStyle(color: Colors.red)),
-              for (final r in _rates)
+                for (final r in _rates)
                 RadioListTile<String>(
                   title: Text(r.label.isNotEmpty ? r.label : r.id),
-                  subtitle: Text('${r.cost} $currency'),
+                  subtitle: Text(formatPrice(r.cost,
+                      currency: currency, decimals: decimals)),
                   value: r.id,
                   groupValue: _shipMethod,
                   onChanged: (v) =>
@@ -400,7 +404,8 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                 Text(_couponError!,
                     style: const TextStyle(color: Colors.red)),
               if (_couponInfo != null)
-                Text('تخفیف: ${_couponInfo!.amount} $currency',
+                Text(
+                    'تخفیف: ${formatPrice(_couponInfo!.amount, currency: currency, decimals: decimals)}',
                     style: const TextStyle(color: Colors.green)),
               if (notesOn) ...[
                 const SizedBox(height: 8),
@@ -408,13 +413,16 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                     maxLines: 2),
               ],
               const Divider(height: 32),
-              Text('جمع سبد: ${cart.subtotal} $currency'),
-              if (_couponInfo != null)
-                Text('تخفیف: −${_couponInfo!.amount} $currency',
-                    style: const TextStyle(color: Colors.green)),
-              Text('ارسال: ${selectedRate?.cost ?? 0} $currency'),
               Text(
-                'قابل پرداخت (تقریبی — مبلغ نهایی سرور): $total $currency',
+                  'جمع سبد: ${formatPrice(cart.subtotal, currency: currency, decimals: decimals)}'),
+              if (_couponInfo != null)
+                Text(
+                    'تخفیف: −${formatPrice(_couponInfo!.amount, currency: currency, decimals: decimals)}',
+                    style: const TextStyle(color: Colors.green)),
+              Text(
+                  'ارسال: ${formatPrice(selectedRate?.cost ?? 0, currency: currency, decimals: decimals)}'),
+              Text(
+                'قابل پرداخت (تقریبی — مبلغ نهایی سرور): ${formatPrice(total, currency: currency, decimals: decimals)}',
                 style: const TextStyle(
                     fontWeight: FontWeight.w800, fontSize: 16),
               ),
@@ -422,7 +430,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
                   child: Text(
-                    'حداقل مبلغ سفارش $minOrder $currency است',
+                    'حداقل مبلغ سفارش ${formatPrice(minOrder, currency: currency, decimals: decimals)} است',
                     style: const TextStyle(color: Colors.red),
                   ),
                 ),
@@ -440,7 +448,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                   onPressed: (_submitting || blocked) ? null : _submit,
                   child: Text(_submitting
                       ? 'در حال ثبت…'
-                      : 'ثبت سفارش • $total $currency'),
+                      : 'ثبت سفارش • ${formatPrice(total, currency: currency, decimals: decimals)}'),
                 ),
               ),
               const SizedBox(height: 8),

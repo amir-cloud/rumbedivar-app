@@ -4,6 +4,9 @@ import 'package:go_router/go_router.dart';
 
 import '../core/app_error.dart';
 import '../providers/app_providers.dart';
+import '../widgets/app_nav.dart';
+import '../widgets/price.dart';
+import '../widgets/skeleton.dart';
 
 /// Orders list with status labels + pull-to-refresh (Issue #2 Step 6).
 class OrdersPage extends ConsumerWidget {
@@ -13,10 +16,16 @@ class OrdersPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final orders = ref.watch(ordersProvider);
     final statuses = ref.watch(orderStatusesProvider);
+    final boot = ref.watch(bootProvider);
+    final currency = boot.maybeWhen(
+        data: (b) => b.store.currencySymbol, orElse: () => '');
+    final decimals =
+        boot.maybeWhen(data: (b) => b.store.numDecimals, orElse: () => 0);
     final labels = statuses.maybeWhen(
         data: (m) => m, orElse: () => const <String, String>{});
     return Scaffold(
       appBar: AppBar(title: const Text('سفارش‌ها')),
+      bottomNavigationBar: const AppBottomNav(current: '/orders'),
       body: Directionality(
         textDirection: TextDirection.rtl,
         child: RefreshIndicator(
@@ -26,8 +35,7 @@ class OrdersPage extends ConsumerWidget {
             await ref.read(ordersProvider.future);
           },
           child: orders.when(
-            loading: () =>
-                const Center(child: CircularProgressIndicator()),
+            loading: () => const SkeletonList(),
             error: (e, _) => ListView(
               children: [
                 Padding(
@@ -82,7 +90,9 @@ class OrdersPage extends ConsumerWidget {
                       title: Text('سفارش ${o.number}'),
                       subtitle: Text(
                           '$label • ${o.itemCount} قلم • ${o.date}'),
-                      trailing: Text('${o.total}'),
+                      trailing: PriceText(o.total,
+                          currency: currency,
+                          decimals: decimals),
                       onTap: () => context.go('/orders/${o.id}'),
                     ),
                   );

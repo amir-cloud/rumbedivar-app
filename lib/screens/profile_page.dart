@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../core/router_support.dart';
 import '../models/customer.dart';
 import '../providers/app_providers.dart';
+import '../widgets/app_nav.dart';
 
 /// Profile: GET/PUT /customer + logout (Issue #2 Step 6).
 /// Keeps app-privacy toggles (biometric lock, no-preview) from home.
@@ -93,6 +94,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               onPressed: _logout),
         ],
       ),
+      bottomNavigationBar:
+          const AppBottomNav(current: '/profile'),
       body: Directionality(
         textDirection: TextDirection.rtl,
         child: customer.when(

@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../core/router_support.dart';
 import '../providers/app_providers.dart';
 import '../services/app_lock_service.dart';
+import '../widgets/app_nav.dart';
 
 /// Home / Landing (Issue #2 Step 2).
 /// Driven by GET /landing + GET /store + GET /config — no app change needed
@@ -57,6 +58,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           IconButton(onPressed: _logout, icon: const Icon(Icons.logout)),
         ],
       ),
+      bottomNavigationBar: const AppBottomNav(current: '/home'),
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(bootProvider);

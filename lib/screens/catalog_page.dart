@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 
 import '../models/product.dart';
 import '../providers/app_providers.dart';
+import '../widgets/app_nav.dart';
+import '../widgets/skeleton.dart';
 
 /// Catalog with infinite scroll, server-driven filters (Issue #2 Step 3).
 class CatalogPage extends ConsumerStatefulWidget {
@@ -66,6 +68,7 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('کاتالوگ')),
+      bottomNavigationBar: const AppBottomNav(current: '/catalog'),
       body: Directionality(
         textDirection: TextDirection.rtl,
         child: Column(
@@ -164,7 +167,7 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
 
   Widget _body(ProductsState state) {
     if (state.loading && state.items.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
+      return const SkeletonGrid();
     }
     if (state.error != null && state.items.isEmpty) {
       final msg = state.error!.contains('endpoint_disabled')
