@@ -2,11 +2,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/api_client.dart';
 import '../models/landing.dart';
+import '../models/order.dart';
 import '../models/product.dart';
 import '../models/store_config.dart';
 import '../models/user.dart';
 import '../services/auth_service.dart';
 import '../services/catalog_service.dart';
+import '../services/checkout_service.dart';
 import '../services/store_service.dart';
 
 final apiClientProvider = Provider<ApiClient>((ref) => ApiClient());
@@ -125,4 +127,12 @@ final productDetailProvider =
 final productReviewsProvider =
     FutureProvider.family<List<ProductReview>, int>((ref, id) async {
   return ref.watch(catalogServiceProvider).getReviewsFor(id);
+});
+
+final checkoutServiceProvider = Provider<CheckoutService>(
+    (ref) => CheckoutService(ref.watch(apiClientProvider)));
+
+final gatewaysProvider =
+    FutureProvider<List<PaymentGateway>>((ref) async {
+  return ref.watch(checkoutServiceProvider).offlineGateways();
 });

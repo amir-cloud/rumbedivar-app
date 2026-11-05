@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'core/router_support.dart';
 import 'screens/cart_page.dart';
 import 'screens/catalog_page.dart';
-import 'screens/discreet_checkout_page.dart';
+import 'screens/checkout_page.dart';
 import 'screens/home_page.dart';
 import 'screens/login_page.dart';
 import 'screens/product_detail_page.dart';
@@ -43,7 +43,7 @@ GoRouter _router() {
           path: '/cart', builder: (_, __) => const CartPage()),
       GoRoute(
           path: '/checkout',
-          builder: (_, __) => const DiscreetCheckoutPage()),
+          builder: (_, __) => const CheckoutPage()),
       GoRoute(
           path: '/orders',
           builder: (_, __) => const PlaceholderPage(title: 'سفارش‌ها')),
