@@ -55,7 +55,8 @@ class CatalogService {
 
   Future<List<ProductCategory>> getCategories() async {
     try {
-      final j = await _api.get('/product_categories');
+      // Plugin route is /products/categories (see class-wc-controller.php).
+      final j = await _api.get('/products/categories');
       final list = j is List
           ? j
           : (j is Map<String, dynamic> ? (j['data'] ?? j['categories']) : null);
