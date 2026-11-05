@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../providers/app_providers.dart';
+import '../providers/cart_provider.dart';
 
 /// Product detail + reviews (Issue #2 Step 3).
 class ProductDetailPage extends ConsumerWidget {
@@ -137,10 +138,21 @@ class ProductDetailPage extends ConsumerWidget {
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: p.inStock
-                          ? () => context.go('/cart')
+                          ? () async {
+                              await ref
+                                  .read(cartProvider.notifier)
+                                  .add(p);
+                              if (!context.mounted) return;
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(const SnackBar(
+                                      content: Text('به سبد اضافه شد',
+                                          textDirection:
+                                              TextDirection.rtl)));
+                              context.go('/cart');
+                            }
                           : null,
                       icon: const Icon(Icons.shopping_cart),
-                      label: const Text('افزودن به سبد (Step 4)'),
+                      label: const Text('افزودن به سبد'),
                     ),
                   ),
                   const SizedBox(height: 20),

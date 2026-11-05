@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'core/router_support.dart';
+import 'screens/cart_page.dart';
 import 'screens/catalog_page.dart';
 import 'screens/discreet_checkout_page.dart';
 import 'screens/home_page.dart';
@@ -39,8 +40,7 @@ GoRouter _router() {
             return ProductDetailPage(id: id);
           }),
       GoRoute(
-          path: '/cart',
-          builder: (_, __) => const PlaceholderPage(title: 'سبد خرید')),
+          path: '/cart', builder: (_, __) => const CartPage()),
       GoRoute(
           path: '/checkout',
           builder: (_, __) => const DiscreetCheckoutPage()),
