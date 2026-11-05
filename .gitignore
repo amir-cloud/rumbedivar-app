@@ -46,3 +46,7 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Research raw PII — never commit recordings/transcripts source
+research/raw-restricted/*
+!research/raw-restricted/.gitkeep
