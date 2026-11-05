@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>روم به دیوار — تسویه حساب محرمانه (Fake-Door Mock)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Vazirmatn, Tahoma, sans-serif; background: #f1f1f4; color: #1a1a1e; display: flex; gap: 24px; justify-content: center; align-items: flex-start; padding: 32px 16px; flex-wrap: wrap; }
+  .meta { max-width: 340px; background: #fff; border-radius: 16px; padding: 20px; font-size: 14px; line-height: 2; border: 1px solid #e4e4e7; }
+  .meta h1 { font-size: 18px; margin-bottom: 8px; }
+  .meta code { background: #f4f4f5; padding: 2px 6px; border-radius: 6px; font-size: 12px; }
+  .phone { width: 360px; min-height: 640px; background: #fff; border-radius: 28px; border: 1px solid #d4d4d8; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,.12); }
+  .phone-head { padding: 20px 20px 12px; border-bottom: 1px solid #eee; }
+  .phone-head h2 { font-size: 20px; font-weight: 800; }
+  .phone-head p { font-size: 13px; color: #63636b; margin-top: 4px; }
+  .badge { display: inline-block; font-size: 12px; background: #eef7ee; color: #1c7a2f; border-radius: 20px; padding: 4px 12px; margin-top: 10px; }
+  .section { padding: 16px 20px; border-bottom: 1px solid #f0f0f3; }
+  .section h3 { font-size: 15px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+  .section p { font-size: 13px; color: #3f3f46; line-height: 2; }
+  .chip { display: inline-block; font-size: 12px; background: #fff7e6; border: 1px solid #f0c36d; color: #8a5a00; border-radius: 8px; padding: 3px 10px; margin-top: 8px; }
+  .radio { display: flex; gap: 10px; align-items: flex-start; border: 1.5px solid #e4e4e7; border-radius: 12px; padding: 12px; margin-top: 10px; cursor: pointer; font-size: 13px; line-height: 1.9; }
+  .radio.selected { border-color: #18181b; background: #fafafa; }
+  .dot { width: 18px; height: 18px; border-radius: 50%; border: 2px solid #18181b; margin-top: 4px; position: relative; flex-shrink: 0; }
+  .selected .dot::after { content: ""; position: absolute; inset: 3px; background: #18181b; border-radius: 50%; }
+  .note { font-size: 12px; color: #71717a; margin-top: 8px; }
+  .bank { background: #f8f8fa; border-radius: 12px; padding: 12px; font-size: 13px; line-height: 2; margin-top: 8px; }
+  .pay { padding: 16px 20px 20px; }
+  .pay button { width: 100%; height: 52px; border: none; border-radius: 14px; background: #18181b; color: #fff; font-size: 16px; font-weight: 700; font-family: inherit; cursor: pointer; }
+  .pay button:active { transform: scale(.99); }
+  .footer { font-size: 12px; color: #71717a; text-align: center; margin-top: 10px; line-height: 2; }
+  .variant-toggle { text-align: center; padding: 12px; background: #fafafa; border-top: 1px dashed #ddd; }
+  .variant-toggle button { font-family: inherit; font-size: 13px; padding: 8px 16px; border-radius: 10px; border: 1px solid #d4d4d8; background: #fff; cursor: pointer; margin: 0 4px; }
+  .variant-toggle button.active { background: #18181b; color: #fff; border-color: #18181b; }
+  .rating { display: flex; gap: 8px; justify-content: center; margin-top: 12px; }
+  .rating button { width: 36px; height: 36px; border-radius: 50%; border: 1px solid #d4d4d8; background: #fff; font-family: inherit; cursor: pointer; }
+  .rating button.picked { background: #18181b; color: #fff; }
+  @media print { body { background: #fff; } .meta { display: none; } }
+</style>
+</head>
+<body>
+<div class="meta">
+  <h1>راهنمای تسهیل‌گر (اسکرین‌شیر)</h1>
+  <p>این موک فقط محرک مصاحبه است، نه طرح نهایی. اول <code>کارت A</code> را نشان بده.</p>
+  <p>سوالات: ۱) اولین حست؟ ۲) چی باورت نمی‌شود؟ ۳) «RDV*Services» کافی است؟ ۴) لاکر را واقعا استفاده می‌کنی؟ ۵) برای بسته خنثی چقدر می‌دهی؟</p>
+  <p>ثبت: امتیاز باورپذیری ۱-۵ + بزرگ‌ترین ترس باقی‌مانده + WTP.</p>
+  <p style="margin-top:8px; color:#71717a; font-size:12px;">Frame: 360×640 • Vazirmatn • RTL • بدون برندینگ صورتی (عمدا خنثی)</p>
+  <div class="rating" id="belief">
+    <button data-v="1">۱</button><button data-v="2">۲</button><button data-v="3">۳</button><button data-v="4">۴</button><button data-v="5">۵</button>
+  </div>
+  <p id="beliefOut" style="text-align:center; font-size:12px; color:#1c7a2f;"></p>
+</div>
+
+<div class="phone" id="phone">
+  <div class="phone-head">
+    <h2>تسویه حساب محرمانه</h2>
+    <p>بدون نام فروشگاه در هیچ مرحله‌ای</p>
+    <span class="badge">✓ پیک از محتوا بی‌اطلاع است</span>
+  </div>
+  <div class="section">
+    <h3>📦 بسته خنثی بدون لوگو</h3>
+    <p>جعبه کرافت ساده، بدون نام «روم به دیوار». فاکتور داخل بسته، بدون اسم محصول روی لیبل.</p>
+    <span class="chip" id="packChip">+ ۱۵ هزار تومان</span>
+  </div>
+  <div class="section">
+    <h3>تحویل</h3>
+    <div class="radio selected" onclick="pick(this)"><span class="dot"></span><span><b>لاکر نزدیک شما</b> — بدون دیدار با پیک<br><span style="color:#63636b">پارک ملت، کد ۴ رقمی پیامک می‌شود</span></span></div>
+    <div class="radio" onclick="pick(this)"><span class="dot"></span><span><b>پیک بدون لوگو</b> — تماس با عنوان «بسته پستی»</span></div>
+    <div class="radio" id="workOpt" style="display:none" onclick="pick(this)"><span class="dot"></span><span><b>محل کار / آدرس آشنا</b> — تحویل بدون ذکر فروشگاه</span></div>
+    <p class="note">پیک از محتوای بسته اطلاع ندارد.</p>
+  </div>
+  <div class="section">
+    <h3>پرداخت و پیامک</h3>
+    <div class="bank">نام در صورتحساب بانکی: <b dir="ltr">RDV*Services</b><br>پیامک: «بسته شما رسید» — بدون نام محصول</div>
+  </div>
+  <div class="pay">
+    <button>پرداخت ۲۴۸٬۰۰۰ تومان</button>
+    <p class="footer">آیکون اپ در گوشی: «یادداشت‌ها» • اعلان بدون پیش‌نمایش</p>
+  </div>
+  <div class="variant-toggle">
+    <button id="btnA" class="active" onclick="setVariant('A')">کارت A (پولی)</button>
+    <button id="btnB" onclick="setVariant('B')">کارت B (رایگان + محل کار)</button>
+  </div>
+</div>
+
+<script>
+function pick(el){ document.querySelectorAll('.radio').forEach(function(r){ r.classList.remove('selected'); }); el.classList.add('selected'); }
+function setVariant(v){
+  var chip = document.getElementById('packChip');
+  var work = document.getElementById('workOpt');
+  document.getElementById('btnA').classList.toggle('active', v==='A');
+  document.getElementById('btnB').classList.toggle('active', v==='B');
+  if(v==='B'){ chip.textContent = 'رایگان برای سفارش بالای ۳۰۰ هزار تومان'; work.style.display='flex'; }
+  else { chip.textContent = '+ ۱۵ هزار تومان'; work.style.display='none'; }
+}
+document.querySelectorAll('#belief button').forEach(function(b){
+  b.onclick = function(){
+    document.querySelectorAll('#belief button').forEach(function(x){ x.classList.remove('picked'); });
+    b.classList.add('picked');
+    document.getElementById('beliefOut').textContent = 'باورپذیری ثبت شد: ' + b.dataset.v + ' از ۵ — در synthesis-template یادداشت کن';
+  };
+});
+</script>
+</body>
+</html>
