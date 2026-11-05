@@ -79,3 +79,6 @@ class AuthState extends ChangeNotifier {
     notifyListeners();
   }
 }
+
+/// Global singleton so login/logout can refresh go_router redirect.
+final appAuthState = AuthState(AuthService());

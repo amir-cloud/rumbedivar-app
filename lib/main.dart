@@ -8,20 +8,17 @@ import 'screens/home_page.dart';
 import 'screens/login_page.dart';
 import 'screens/register_page.dart';
 import 'screens/splash_page.dart';
-import 'services/auth_service.dart';
-
-final _authState = AuthState(AuthService());
 
 GoRouter _router() {
   return GoRouter(
     initialLocation: '/splash',
-    refreshListenable: _authState,
+    refreshListenable: appAuthState,
     redirect: (context, state) {
-      if (!_authState.ready) return null;
+      if (!appAuthState.ready) return null;
       final loggingIn = state.matchedLocation == '/login' ||
           state.matchedLocation == '/register' ||
           state.matchedLocation == '/splash';
-      if (!_authState.loggedIn && !loggingIn) return '/login';
+      if (!appAuthState.loggedIn && !loggingIn) return '/login';
       return null;
     },
     routes: [
@@ -61,7 +58,7 @@ GoRouter _router() {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await _authState.boot();
+  await appAuthState.boot();
   runApp(ProviderScope(child: MainApp(router: _router())));
 }
 

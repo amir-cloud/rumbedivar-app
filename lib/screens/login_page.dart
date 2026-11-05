@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../services/auth_service.dart';
+import '../core/router_support.dart';
+import '../providers/app_providers.dart';
 
-class LoginPage extends StatefulWidget {
+class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  ConsumerState<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends ConsumerState<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _authService = AuthService();
 
   bool _loading = false;
   bool _obscure = true;
@@ -33,13 +34,16 @@ class _LoginPageState extends State<LoginPage> {
       _loading = true;
       _error = null;
     });
-    final result = await _authService.login(
-      _usernameController.text.trim(),
-      _passwordController.text,
-    );
+    final result = await ref.read(authServiceProvider).login(
+          _usernameController.text.trim(),
+          _passwordController.text,
+        );
     if (!mounted) return;
     setState(() => _loading = false);
     if (result.success) {
+      // Sync router guard with new token (Phase 1).
+      final token = await ref.read(authServiceProvider).getToken();
+      appAuthState.setToken(token);
       if (!mounted) return;
       context.go('/home');
     } else {
@@ -49,6 +53,11 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final boot = ref.watch(bootProvider);
+    final registrationEnabled = boot.maybeWhen(
+      data: (b) => b.config.enableRegistration,
+      orElse: () => true,
+    );
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -157,13 +166,15 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    TextButton(
-                      onPressed: () => context.go('/register'),
-                      child: const Text(
-                        'ثبت نام',
-                        style: TextStyle(color: Colors.white, decoration: TextDecoration.underline),
+                    // Phase 1: hide register link if enable_registration=0.
+                    if (registrationEnabled)
+                      TextButton(
+                        onPressed: () => context.go('/register'),
+                        child: const Text(
+                          'ثبت نام',
+                          style: TextStyle(color: Colors.white, decoration: TextDecoration.underline),
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),

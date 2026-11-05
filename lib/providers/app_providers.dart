@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/api_client.dart';
+import '../models/landing.dart';
 import '../models/store_config.dart';
 import '../models/user.dart';
 import '../services/auth_service.dart';
@@ -22,7 +23,12 @@ final meProvider = FutureProvider<User?>((ref) async {
 final storeServiceProvider =
     Provider<StoreService>((ref) => StoreService(ref.watch(apiClientProvider)));
 
-final bootProvider =
-    FutureProvider<({StoreInfo store, AppConfig config})>((ref) async {
+final bootProvider = FutureProvider<
+    ({StoreInfo store, AppConfig config, LandingData landing})>((ref) async {
   return ref.watch(storeServiceProvider).loadBoot();
+});
+
+final discountProvider =
+    FutureProvider.family<AppDiscount?, double>((ref, subtotal) async {
+  return ref.watch(storeServiceProvider).appDiscount(subtotal);
 });
