@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../core/router_support.dart';
 import '../providers/app_providers.dart';
+import '../widgets/animated_brand_background.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -59,16 +60,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       orElse: () => true,
     );
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFFC30960), Color(0xFFF83389)],
-          ),
-        ),
+      body: AnimatedBrandBackground(
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
@@ -167,14 +159,39 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     ),
                     const SizedBox(height: 16),
                     // Phase 1: hide register link if enable_registration=0.
-                    if (registrationEnabled)
-                      TextButton(
-                        onPressed: () => context.go('/register'),
-                        child: const Text(
-                          'ثبت نام',
-                          style: TextStyle(color: Colors.white, decoration: TextDecoration.underline),
+                    if (registrationEnabled) ...[
+                      Row(
+                        children: [
+                          Expanded(child: Divider(color: Colors.white.withOpacity(0.35))),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            child: Text(
+                              'یا',
+                              style: TextStyle(color: Colors.white.withOpacity(0.85), fontSize: 13),
+                            ),
+                          ),
+                          Expanded(child: Divider(color: Colors.white.withOpacity(0.35))),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52,
+                        child: OutlinedButton(
+                          onPressed: () => context.go('/register'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            side: BorderSide(color: Colors.white.withOpacity(0.85), width: 1.5),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                            backgroundColor: Colors.white.withOpacity(0.08),
+                          ),
+                          child: const Text(
+                            'ایجاد حساب کاربری',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                          ),
                         ),
                       ),
+                    ],
                   ],
                 ),
               ),

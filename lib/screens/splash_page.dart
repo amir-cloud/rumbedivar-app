@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../providers/app_providers.dart';
+import '../widgets/animated_brand_background.dart';
+
+const String _kOnboardingSeenKey = 'onboarding_seen_v1';
 
 /// Splash boots token + store/config, then routes (Step 0).
 class SplashPage extends ConsumerStatefulWidget {
@@ -23,12 +27,22 @@ class _SplashPageState extends ConsumerState<SplashPage> {
     await Future.delayed(const Duration(seconds: 2));
     if (!mounted) return;
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final seen = prefs.getBool(_kOnboardingSeenKey) ?? false;
       final token = await ref.read(authServiceProvider).getToken();
       // Warm boot cache (best-effort, ignore failures offline).
+      dynamic boot;
       try {
-        await ref.read(bootProvider.future);
+        boot = await ref.read(bootProvider.future);
       } catch (_) {}
       if (!mounted) return;
+      if (!seen && boot != null) {
+        final landing = boot.landing;
+        if (landing.onboardingEnabled && landing.onboardingSlides.isNotEmpty) {
+          context.go('/onboarding');
+          return;
+        }
+      }
       if (token != null && token.isNotEmpty) {
         context.go('/home');
       } else {
@@ -43,16 +57,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFFC30960), Color(0xFFF83389)],
-          ),
-        ),
+      body: AnimatedBrandBackground(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

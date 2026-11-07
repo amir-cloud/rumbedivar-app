@@ -8,6 +8,7 @@ import 'screens/catalog_page.dart';
 import 'screens/checkout_page.dart';
 import 'screens/home_page.dart';
 import 'screens/login_page.dart';
+import 'screens/onboarding_page.dart';
 import 'screens/order_detail_page.dart';
 import 'screens/orders_page.dart';
 import 'screens/product_detail_page.dart';
@@ -15,20 +16,22 @@ import 'screens/profile_page.dart';
 import 'screens/register_page.dart';
 import 'screens/splash_page.dart';
 
-GoRouter _router() {
+GoRouter createRouter(AuthState authState, {String initialLocation = '/splash'}) {
   return GoRouter(
-    initialLocation: '/splash',
-    refreshListenable: appAuthState,
+    initialLocation: initialLocation,
+    refreshListenable: authState,
     redirect: (context, state) {
-      if (!appAuthState.ready) return null;
+      if (!authState.ready) return null;
       final loggingIn = state.matchedLocation == '/login' ||
           state.matchedLocation == '/register' ||
-          state.matchedLocation == '/splash';
-      if (!appAuthState.loggedIn && !loggingIn) return '/login';
+          state.matchedLocation == '/splash' ||
+          state.matchedLocation == '/onboarding';
+      if (!authState.loggedIn && !loggingIn) return '/login';
       return null;
     },
     routes: [
       GoRoute(path: '/splash', builder: (_, __) => const SplashPage()),
+      GoRoute(path: '/onboarding', builder: (_, __) => const OnboardingPage()),
       GoRoute(path: '/login', builder: (_, __) => const LoginPage()),
       GoRoute(path: '/register', builder: (_, __) => const RegisterPage()),
       GoRoute(path: '/home', builder: (_, __) => const HomePage()),
@@ -69,7 +72,7 @@ GoRouter _router() {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await appAuthState.boot();
-  runApp(ProviderScope(child: MainApp(router: _router())));
+  runApp(ProviderScope(child: MainApp(router: createRouter(appAuthState))));
 }
 
 class MainApp extends StatelessWidget {
@@ -81,7 +84,10 @@ class MainApp extends StatelessWidget {
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       routerConfig: router,
-      theme: ThemeData(useMaterial3: true),
+      theme: ThemeData(
+        useMaterial3: true,
+        fontFamily: 'IRANSans',
+      ),
     );
   }
 }

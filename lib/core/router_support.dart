@@ -74,6 +74,13 @@ class AuthState extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// For tests: mark auth resolution complete without reading storage.
+  void markReady({String? token}) {
+    _token = token;
+    _ready = true;
+    notifyListeners();
+  }
+
   void setToken(String? t) {
     _token = t;
     notifyListeners();

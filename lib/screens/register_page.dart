@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../core/app_error.dart';
 import '../providers/app_providers.dart';
+import '../widgets/animated_brand_background.dart';
 
 /// Register gated by enable_registration / 403 registration_disabled (Step 1).
 class RegisterPage extends ConsumerStatefulWidget {
@@ -14,30 +15,36 @@ class RegisterPage extends ConsumerStatefulWidget {
 }
 
 class _RegisterPageState extends ConsumerState<RegisterPage> {
-  final _form = GlobalKey<FormState>();
-  final _u = TextEditingController();
-  final _e = TextEditingController();
-  final _p = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  final _usernameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+
   bool _loading = false;
+  bool _obscure = true;
   String? _error;
 
   @override
   void dispose() {
-    _u.dispose();
-    _e.dispose();
-    _p.dispose();
+    _usernameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
   Future<void> _submit() async {
-    if (!_form.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) return;
     setState(() {
       _loading = true;
       _error = null;
     });
     final r = await ref
         .read(authServiceProvider)
-        .register(_u.text.trim(), _e.text.trim(), _p.text);
+        .register(
+          _usernameController.text.trim(),
+          _emailController.text.trim(),
+          _passwordController.text,
+        );
     if (!mounted) return;
     setState(() => _loading = false);
     if (r.success) {
@@ -51,78 +58,221 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   Widget build(BuildContext context) {
     final boot = ref.watch(bootProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('ثبت‌نام')),
-      body: Directionality(
-        textDirection: TextDirection.rtl,
-        child: boot.when(
-          loading: () =>
-              const Center(child: CircularProgressIndicator()),
-          error: (e, _) {
-            if (e is AppError && e.isDisabled) {
-              return const Center(
-                  child: Text('ثبت‌نام فعلا غیرفعال است'));
-            }
-            return _formBody(allow: true);
-          },
-          data: (b) {
-            if (!b.config.enableRegistration) {
-              return const Center(
-                  child: Text('ثبت‌نام فعلا غیرفعال است'));
-            }
-            return _formBody(allow: true);
-          },
+      body: AnimatedBrandBackground(
+        child: SafeArea(
+          child: boot.when(
+            loading: () => const Center(
+              child: CircularProgressIndicator(color: Colors.white),
+            ),
+            error: (e, _) {
+              if (e is AppError && e.isDisabled) {
+                return _messageBody('ثبت‌نام فعلا غیرفعال است');
+              }
+              return _formBody();
+            },
+            data: (b) {
+              if (!b.config.enableRegistration) {
+                return _messageBody('ثبت‌نام فعلا غیرفعال است');
+              }
+              return _formBody();
+            },
+          ),
         ),
       ),
     );
   }
 
-  Widget _formBody({required bool allow}) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Form(
-        key: _form,
+  Widget _messageBody(String message) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 28),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            if (_error != null) ...[
-              Text(_error!,
-                  style: const TextStyle(color: Colors.red)),
-              const SizedBox(height: 12),
-            ],
-            TextFormField(
-              controller: _u,
-              decoration:
-                  const InputDecoration(labelText: 'نام کاربری'),
-              validator: (v) =>
-                  (v == null || v.trim().isEmpty) ? 'الزامی' : null,
-            ),
-            TextFormField(
-              controller: _e,
-              decoration: const InputDecoration(labelText: 'ایمیل'),
-              validator: (v) =>
-                  (v == null || !v.contains('@')) ? 'ایمیل معتبر' : null,
-            ),
-            TextFormField(
-              controller: _p,
-              obscureText: true,
-              decoration: const InputDecoration(labelText: 'رمز عبور'),
-              validator: (v) =>
-                  (v == null || v.length < 6) ? 'حداقل ۶ کاراکتر' : null,
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: ElevatedButton(
-                onPressed: _loading ? null : _submit,
-                child: Text(_loading ? '...' : 'ثبت‌نام'),
+            Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.25),
+                    blurRadius: 24,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: ClipOval(
+                child: Image.asset('assets/images/logo.png', fit: BoxFit.cover),
               ),
             ),
+            const SizedBox(height: 24),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.white70),
+              ),
+              child: Text(
+                message,
+                style: const TextStyle(color: Colors.white, fontSize: 16),
+                textDirection: TextDirection.rtl,
+                textAlign: TextAlign.center,
+              ),
+            ),
+            const SizedBox(height: 16),
             TextButton(
               onPressed: () => context.go('/login'),
-              child: const Text('حساب دارم — ورود'),
+              child: const Text(
+                'بازگشت به ورود',
+                style: TextStyle(color: Colors.white, decoration: TextDecoration.underline),
+              ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _formBody() {
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.25),
+                      blurRadius: 24,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: ClipOval(
+                  child: Image.asset('assets/images/logo.png', fit: BoxFit.cover),
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'ایجاد حساب کاربری',
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                ),
+                textDirection: TextDirection.rtl,
+              ),
+              const SizedBox(height: 24),
+              if (_error != null) ...[
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.white70),
+                  ),
+                  child: Text(
+                    _error!,
+                    style: const TextStyle(color: Colors.white),
+                    textDirection: TextDirection.rtl,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+              TextFormField(
+                controller: _usernameController,
+                textDirection: TextDirection.ltr,
+                style: const TextStyle(color: Colors.white),
+                decoration: _inputDecoration('نام کاربری', Icons.person),
+                validator: (v) => (v == null || v.trim().isEmpty) ? 'نام کاربری را وارد کنید' : null,
+              ),
+              const SizedBox(height: 14),
+              TextFormField(
+                controller: _emailController,
+                keyboardType: TextInputType.emailAddress,
+                textDirection: TextDirection.ltr,
+                style: const TextStyle(color: Colors.white),
+                decoration: _inputDecoration('ایمیل', Icons.email),
+                validator: (v) => (v == null || !v.contains('@')) ? 'ایمیل معتبر وارد کنید' : null,
+              ),
+              const SizedBox(height: 14),
+              TextFormField(
+                controller: _passwordController,
+                obscureText: _obscure,
+                textDirection: TextDirection.ltr,
+                style: const TextStyle(color: Colors.white),
+                decoration: _inputDecoration('رمز عبور', Icons.lock).copyWith(
+                  suffixIcon: IconButton(
+                    icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off, color: Colors.white70),
+                    onPressed: () => setState(() => _obscure = !_obscure),
+                  ),
+                ),
+                validator: (v) => (v == null || v.length < 6) ? 'حداقل ۶ کاراکتر' : null,
+                onFieldSubmitted: (_) => _submit(),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: ElevatedButton(
+                  onPressed: _loading ? null : _submit,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: const Color(0xFFC30960),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                  child: _loading
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(strokeWidth: 2.5),
+                        )
+                      : const Text('ثبت‌نام', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextButton(
+                onPressed: () => context.go('/login'),
+                child: const Text(
+                  'حساب دارم — ورود',
+                  style: TextStyle(color: Colors.white, decoration: TextDecoration.underline),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  InputDecoration _inputDecoration(String label, IconData icon) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: const TextStyle(color: Colors.white70),
+      prefixIcon: Icon(icon, color: Colors.white70),
+      filled: true,
+      fillColor: Colors.white.withOpacity(0.12),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide.none,
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: Colors.white),
       ),
     );
   }
