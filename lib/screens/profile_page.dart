@@ -2,12 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../core/router_support.dart';
 import '../models/customer.dart';
 import '../providers/app_providers.dart';
-import '../widgets/app_nav.dart';
 
-/// Profile: GET/PUT /customer + logout (Issue #2 Step 6).
+/// Profile: GET/PUT /customer (Issue #2 Step 6).
 /// Keeps app-privacy toggles (biometric lock, no-preview) from home.
 class ProfilePage extends ConsumerStatefulWidget {
   const ProfilePage({super.key});
@@ -64,9 +62,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
       ref.invalidate(customerProvider);
       ref.invalidate(meProvider);
       if (!mounted) return;
-      setState(() => _msg = updated != null
-          ? 'ذخیره شد ✓'
-          : 'پاسخی از سرور نیامد');
+      setState(() => _msg = updated != null ? 'ذخیره شد ✓' : 'پاسخی از سرور نیامد');
     } catch (e) {
       if (!mounted) return;
       setState(() => _msg = 'خطا در ذخیره: $e');
@@ -75,95 +71,65 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     }
   }
 
-  Future<void> _logout() async {
-    await ref.read(authServiceProvider).logout();
-    appAuthState.setToken(null);
-    if (!mounted) return;
-    context.go('/login');
-  }
-
   @override
   Widget build(BuildContext context) {
     final customer = ref.watch(customerProvider);
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('پروفایل'),
-        actions: [
-          IconButton(
-              icon: const Icon(Icons.logout),
-              onPressed: _logout),
-        ],
-      ),
-      bottomNavigationBar:
-          const AppBottomNav(current: '/profile'),
-      body: Directionality(
-        textDirection: TextDirection.rtl,
-        child: customer.when(
-          loading: () =>
-              const Center(child: CircularProgressIndicator()),
-          error: (_, __) => Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: customer.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (_, __) => Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('خطا در بارگذاری پروفایل'),
+              const SizedBox(height: 12),
+              ElevatedButton(
+                onPressed: () => ref.invalidate(customerProvider),
+                child: const Text('تلاش مجدد'),
+              ),
+            ],
+          ),
+        ),
+        data: (c) {
+          if (c == null) {
+            return const Center(child: Text('پروفایل یافت نشد'));
+          }
+          _fill(c);
+          return Form(
+            key: _form,
+            child: ListView(
+              padding: const EdgeInsets.all(16),
               children: [
-                const Text('خطا در بارگذاری پروفایل'),
+                Text('نام کاربری: ${c.username}',
+                    style: const TextStyle(color: Colors.grey)),
                 const SizedBox(height: 12),
-                ElevatedButton(
-                  onPressed: () =>
-                      ref.invalidate(customerProvider),
-                  child: const Text('تلاش مجدد'),
+                _field(_first, 'نام'),
+                _field(_last, 'نام خانوادگی'),
+                _field(_email, 'ایمیل', keyboard: TextInputType.emailAddress),
+                _field(_phone, 'موبایل', keyboard: TextInputType.phone),
+                if (_msg != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Text(_msg!),
+                  ),
+                SizedBox(
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: _saving ? null : () => _save(c.id, c.username),
+                    child: Text(_saving ? 'در حال ذخیره…' : 'ذخیره'),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: () => context.go('/orders'),
+                  icon: const Icon(Icons.receipt_long),
+                  label: const Text('سفارش‌های من'),
                 ),
               ],
             ),
-          ),
-          data: (c) {
-            if (c == null) {
-              return const Center(
-                  child: Text('پروفایل یافت نشد'));
-            }
-            _fill(c);
-            return Form(
-              key: _form,
-              child: ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  Text('نام کاربری: ${c.username}',
-                      style:
-                          const TextStyle(color: Colors.grey)),
-                  const SizedBox(height: 12),
-                  _field(_first, 'نام'),
-                  _field(_last, 'نام خانوادگی'),
-                  _field(_email, 'ایمیل',
-                      keyboard: TextInputType.emailAddress),
-                  _field(_phone, 'موبایل',
-                      keyboard: TextInputType.phone),
-                  if (_msg != null)
-                    Padding(
-                      padding:
-                          const EdgeInsets.only(bottom: 8),
-                      child: Text(_msg!),
-                    ),
-                  SizedBox(
-                    height: 48,
-                    child: ElevatedButton(
-                      onPressed: _saving
-                          ? null
-                          : () => _save(c.id, c.username),
-                      child: Text(
-                          _saving ? 'در حال ذخیره…' : 'ذخیره'),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  OutlinedButton.icon(
-                    onPressed: () => context.go('/orders'),
-                    icon: const Icon(Icons.receipt_long),
-                    label:
-                        const Text('سفارش‌های من'),
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
+          );
+        },
       ),
     );
   }
@@ -177,8 +143,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         keyboardType: keyboard,
         decoration: InputDecoration(
           labelText: label,
-          border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12)),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           isDense: true,
         ),
       ),

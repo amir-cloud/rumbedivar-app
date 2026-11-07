@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 
 import '../models/product.dart';
 import '../providers/app_providers.dart';
-import '../widgets/app_nav.dart';
 import '../widgets/skeleton.dart';
 
 /// Catalog with infinite scroll, server-driven filters (Issue #2 Step 3).
@@ -39,8 +38,7 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
   }
 
   void _onScroll() {
-    if (_scroll.position.pixels >=
-        _scroll.position.maxScrollExtent - 400) {
+    if (_scroll.position.pixels >= _scroll.position.maxScrollExtent - 400) {
       ref.read(productsProvider.notifier).loadMore();
     }
   }
@@ -59,108 +57,104 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
     final state = ref.watch(productsProvider);
     final cats = ref.watch(categoriesProvider);
     final boot = ref.watch(bootProvider);
-    final showFeatured =
-        boot.maybeWhen(data: (b) => b.config.filterOn('featured'), orElse: () => true);
-    final showOnSale =
-        boot.maybeWhen(data: (b) => b.config.filterOn('on_sale'), orElse: () => true);
-    final showCategory =
-        boot.maybeWhen(data: (b) => b.config.filterOn('category'), orElse: () => true);
+    final showFeatured = boot.maybeWhen(
+        data: (b) => b.config.filterOn('featured'), orElse: () => true);
+    final showOnSale = boot.maybeWhen(
+        data: (b) => b.config.filterOn('on_sale'), orElse: () => true);
+    final showCategory = boot.maybeWhen(
+        data: (b) => b.config.filterOn('category'), orElse: () => true);
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('کاتالوگ')),
-      bottomNavigationBar: const AppBottomNav(current: '/catalog'),
-      body: Directionality(
-        textDirection: TextDirection.rtl,
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: TextField(
-                controller: _search,
-                decoration: InputDecoration(
-                  hintText: 'جستجو…',
-                  prefixIcon: const Icon(Icons.search),
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                  isDense: true,
-                ),
-                onSubmitted: (_) => _apply(),
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: TextField(
+              controller: _search,
+              decoration: InputDecoration(
+                hintText: 'جستجو…',
+                prefixIcon: const Icon(Icons.search),
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                isDense: true,
               ),
+              onSubmitted: (_) => _apply(),
             ),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Row(
-                children: [
-                  if (showFeatured)
-                    Padding(
-                      padding: const EdgeInsets.only(left: 8),
-                      child: FilterChip(
-                        label: const Text('ویژه'),
-                        selected: _featured == true,
-                        onSelected: (v) {
-                          setState(() => _featured = v ? true : null);
-                          _apply();
-                        },
-                      ),
-                    ),
-                  if (showOnSale)
-                    Padding(
-                      padding: const EdgeInsets.only(left: 8),
-                      child: FilterChip(
-                        label: const Text('حراج'),
-                        selected: _onSale == true,
-                        onSelected: (v) {
-                          setState(() => _onSale = v ? true : null);
-                          _apply();
-                        },
-                      ),
-                    ),
-                  if (showCategory)
-                    ...cats.maybeWhen(
-                      data: (list) => list
-                          .map((c) => Padding(
-                                padding: const EdgeInsets.only(left: 8),
-                                child: ChoiceChip(
-                                  label: Text(c.name),
-                                  selected: _category == '${c.id}',
-                                  onSelected: (v) {
-                                    setState(() => _category =
-                                        v ? '${c.id}' : null);
-                                    _apply();
-                                  },
-                                ),
-                              ))
-                          .toList(),
-                      orElse: () => const <Widget>[],
-                    ),
-                  if (_category != null ||
-                      _featured != null ||
-                      _onSale != null ||
-                      _search.text.isNotEmpty)
-                    TextButton(
-                      onPressed: () {
-                        setState(() {
-                          _category = null;
-                          _featured = null;
-                          _onSale = null;
-                          _search.clear();
-                        });
+          ),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Row(
+              children: [
+                if (showFeatured)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8),
+                    child: FilterChip(
+                      label: const Text('ویژه'),
+                      selected: _featured == true,
+                      onSelected: (v) {
+                        setState(() => _featured = v ? true : null);
                         _apply();
                       },
-                      child: const Text('حذف فیلتر'),
                     ),
-                ],
-              ),
+                  ),
+                if (showOnSale)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8),
+                    child: FilterChip(
+                      label: const Text('حراج'),
+                      selected: _onSale == true,
+                      onSelected: (v) {
+                        setState(() => _onSale = v ? true : null);
+                        _apply();
+                      },
+                    ),
+                  ),
+                if (showCategory)
+                  ...cats.maybeWhen(
+                    data: (list) => list
+                        .map((c) => Padding(
+                              padding: const EdgeInsets.only(left: 8),
+                              child: ChoiceChip(
+                                label: Text(c.name),
+                                selected: _category == '${c.id}',
+                                onSelected: (v) {
+                                  setState(
+                                      () => _category = v ? '${c.id}' : null);
+                                  _apply();
+                                },
+                              ),
+                            ))
+                        .toList(),
+                    orElse: () => const <Widget>[],
+                  ),
+                if (_category != null ||
+                    _featured != null ||
+                    _onSale != null ||
+                    _search.text.isNotEmpty)
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        _category = null;
+                        _featured = null;
+                        _onSale = null;
+                        _search.clear();
+                      });
+                      _apply();
+                    },
+                    child: const Text('حذف فیلتر'),
+                  ),
+              ],
             ),
-            Expanded(
-              child: RefreshIndicator(
-                onRefresh: () async => _apply(),
-                child: _body(state),
-              ),
+          ),
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: () async => _apply(),
+              child: _body(state),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -181,8 +175,7 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
               children: [
                 Text(msg, textAlign: TextAlign.center),
                 const SizedBox(height: 12),
-                ElevatedButton(
-                    onPressed: _apply, child: const Text('تلاش مجدد')),
+                ElevatedButton(onPressed: _apply, child: const Text('تلاش مجدد')),
               ],
             ),
           ),
@@ -235,8 +228,7 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
                       ? CachedNetworkImage(
                           imageUrl: p.image,
                           fit: BoxFit.cover,
-                          errorWidget: (_, __, ___) =>
-                              const Icon(Icons.image),
+                          errorWidget: (_, __, ___) => const Icon(Icons.image),
                         )
                       : const Icon(Icons.image),
                   if (p.onSale)
@@ -251,8 +243,8 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Text('حراج',
-                            style: TextStyle(
-                                color: Colors.white, fontSize: 12)),
+                            style:
+                                TextStyle(color: Colors.white, fontSize: 12)),
                       ),
                     ),
                 ],
@@ -263,8 +255,7 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(p.name,
-                      maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis),
                   const SizedBox(height: 4),
                   Text(
                     p.price.isNotEmpty ? '${p.price}' : '—',
@@ -275,8 +266,8 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
                   ),
                   if (p.ratingCount > 0)
                     Text('★ ${p.rating} (${p.ratingCount})',
-                        style: const TextStyle(
-                            fontSize: 12, color: Colors.grey)),
+                        style:
+                            const TextStyle(fontSize: 12, color: Colors.grey)),
                 ],
               ),
             ),

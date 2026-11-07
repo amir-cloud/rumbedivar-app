@@ -8,8 +8,8 @@ import '../providers/app_providers.dart';
 /// A destination hides only when the server explicitly disables its key
 /// (403 endpoint_disabled yields the same friendly message in-page).
 class AppBottomNav extends ConsumerWidget {
-  const AppBottomNav({super.key, required this.current});
-  final String current;
+  const AppBottomNav({super.key, this.current});
+  final String? current;
 
   static const _catalogKeys = [
     'products',
@@ -30,6 +30,7 @@ class AppBottomNav extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final location = current ?? GoRouterState.of(context).uri.path;
     final boot = ref.watch(bootProvider);
     final toggles = boot.maybeWhen(
         data: (b) => b.config.apiToggles,
@@ -46,7 +47,7 @@ class AppBottomNav extends ConsumerWidget {
         (route: '/profile', icon: Icons.person_outline, label: 'پروفایل'),
     ];
     if (items.length < 2) return const SizedBox.shrink();
-    var index = items.indexWhere((e) => e.route == current);
+    var index = items.indexWhere((e) => e.route == location);
     if (index < 0) index = 0;
     return Directionality(
       textDirection: TextDirection.rtl,

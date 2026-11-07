@@ -3,10 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../core/router_support.dart';
 import '../providers/app_providers.dart';
 import '../services/app_lock_service.dart';
-import '../widgets/app_nav.dart';
 
 /// Home / Landing (Issue #2 Step 2).
 /// Driven by GET /landing + GET /store + GET /config — no app change needed
@@ -39,91 +37,74 @@ class _HomePageState extends ConsumerState<HomePage> {
     });
   }
 
-  Future<void> _logout() async {
-    await ref.read(authServiceProvider).logout();
-    appAuthState.setToken(null);
-    if (!mounted) return;
-    context.go('/login');
-  }
-
   @override
   Widget build(BuildContext context) {
     final me = ref.watch(meProvider);
     final boot = ref.watch(bootProvider);
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('روم به دیوار'),
-        actions: [
-          IconButton(onPressed: () => context.go('/profile'), icon: const Icon(Icons.person)),
-          IconButton(onPressed: _logout, icon: const Icon(Icons.logout)),
-        ],
-      ),
-      bottomNavigationBar: const AppBottomNav(current: '/home'),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          ref.invalidate(bootProvider);
-          ref.invalidate(meProvider);
-          await ref.read(bootProvider.future);
-        },
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              me.when(
-                loading: () => const SizedBox.shrink(),
-                error: (_, __) => const SizedBox.shrink(),
-                data: (u) => Text(
-                  'خوش آمدید ${u?.displayName ?? u?.username ?? ''}',
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-                  textDirection: TextDirection.rtl,
-                ),
+    return RefreshIndicator(
+      onRefresh: () async {
+        ref.invalidate(bootProvider);
+        ref.invalidate(meProvider);
+        await ref.read(bootProvider.future);
+      },
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            me.when(
+              loading: () => const SizedBox.shrink(),
+              error: (_, __) => const SizedBox.shrink(),
+              data: (u) => Text(
+                'خوش آمدید ${u?.displayName ?? u?.username ?? ''}',
+                style:
+                    const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+                textDirection: TextDirection.rtl,
               ),
-              const SizedBox(height: 16),
-              boot.when(
-                loading: () =>
-                    const Center(child: CircularProgressIndicator()),
-                error: (_, __) => const Text(
-                  'فروشگاه موقتا در دسترس نیست — دوباره بکشید',
-                  textDirection: TextDirection.rtl,
-                ),
-                data: (b) => _landingBody(b.landing, b.store.currencySymbol),
+            ),
+            const SizedBox(height: 16),
+            boot.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (_, __) => const Text(
+                'فروشگاه موقتا در دسترس نیست — دوباره بکشید',
+                textDirection: TextDirection.rtl,
               ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () => context.go('/checkout'),
-                  icon: const Icon(Icons.lock_outline),
-                  label: const Text('تسویه حساب محرمانه'),
-                ),
+              data: (b) => _landingBody(b.landing, b.store.currencySymbol),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () => context.go('/checkout'),
+                icon: const Icon(Icons.lock_outline),
+                label: const Text('تسویه حساب محرمانه'),
               ),
-              const SizedBox(height: 12),
-              SwitchListTile(
-                title: const Text('قفل اپ', textDirection: TextDirection.rtl),
-                subtitle: const Text('TODO: biometric via local_auth',
-                    textDirection: TextDirection.ltr,
-                    style: TextStyle(fontSize: 11)),
-                value: _appLock,
-                onChanged: (v) async {
-                  await _lock.setLockEnabled(v);
-                  if (!mounted) return;
-                  setState(() => _appLock = v);
-                },
-              ),
-              SwitchListTile(
-                title: const Text('اعلان بدون پیش‌نمایش',
-                    textDirection: TextDirection.rtl),
-                value: _noPreview,
-                onChanged: (v) async {
-                  await _lock.setNoPreviewEnabled(v);
-                  if (!mounted) return;
-                  setState(() => _noPreview = v);
-                },
-              ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 12),
+            SwitchListTile(
+              title: const Text('قفل اپ', textDirection: TextDirection.rtl),
+              subtitle: const Text('TODO: biometric via local_auth',
+                  textDirection: TextDirection.ltr,
+                  style: TextStyle(fontSize: 11)),
+              value: _appLock,
+              onChanged: (v) async {
+                await _lock.setLockEnabled(v);
+                if (!mounted) return;
+                setState(() => _appLock = v);
+              },
+            ),
+            SwitchListTile(
+              title: const Text('اعلان بدون پیش‌نمایش',
+                  textDirection: TextDirection.rtl),
+              value: _noPreview,
+              onChanged: (v) async {
+                await _lock.setNoPreviewEnabled(v);
+                if (!mounted) return;
+                setState(() => _noPreview = v);
+              },
+            ),
+          ],
         ),
       ),
     );
@@ -159,8 +140,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                         height: 160,
                         width: double.infinity,
                         fit: BoxFit.cover,
-                        errorWidget: (_, __, ___) =>
-                            const SizedBox.shrink(),
+                        errorWidget: (_, __, ___) => const SizedBox.shrink(),
                       ),
                     ),
                   ],
@@ -228,8 +208,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: featured.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(width: 12),
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
                   itemBuilder: (_, i) {
                     final p = featured[i] as Map;
                     final img = (p['image'] ?? p['images'])?.toString() ?? '';
@@ -251,8 +230,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                             Padding(
                               padding: const EdgeInsets.all(8),
                               child: Text('${p['name'] ?? ''}',
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis),
+                                  maxLines: 1, overflow: TextOverflow.ellipsis),
                             ),
                           ],
                         ),
