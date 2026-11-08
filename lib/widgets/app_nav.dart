@@ -18,7 +18,6 @@ class AppBottomNav extends ConsumerWidget {
     'product_categories'
   ];
   static const _checkoutKeys = ['checkout', 'orders_create', 'cart'];
-  static const _ordersKeys = ['orders', 'orders_get'];
   static const _profileKeys = ['customer', 'customer_get', 'me'];
 
   bool _visible(Map<String, bool> toggles, List<String> keys) {
@@ -38,16 +37,19 @@ class AppBottomNav extends ConsumerWidget {
     final items = <({String route, IconData icon, String label})>[
       (route: '/home', icon: Icons.home_outlined, label: 'خانه'),
       if (_visible(toggles, _catalogKeys))
-        (route: '/catalog', icon: Icons.grid_view_outlined, label: 'کاتالوگ'),
+        (route: '/catalog', icon: Icons.grid_view_outlined, label: 'دسته بندی ها'),
+      if (_visible(toggles, _catalogKeys))
+        (route: '/search', icon: Icons.search, label: 'جستجو'),
       if (_visible(toggles, _checkoutKeys))
         (route: '/cart', icon: Icons.shopping_cart_outlined, label: 'سبد'),
-      if (_visible(toggles, _ordersKeys))
-        (route: '/orders', icon: Icons.receipt_long_outlined, label: 'سفارش‌ها'),
       if (_visible(toggles, _profileKeys))
         (route: '/profile', icon: Icons.person_outline, label: 'پروفایل'),
     ];
     if (items.length < 2) return const SizedBox.shrink();
-    var index = items.indexWhere((e) => e.route == location);
+    var effectiveLocation = location;
+    if (effectiveLocation == '/orders') effectiveLocation = '/profile';
+    if (effectiveLocation.startsWith('/category/')) effectiveLocation = '/catalog';
+    var index = items.indexWhere((e) => e.route == effectiveLocation);
     if (index < 0) index = 0;
     return Directionality(
       textDirection: TextDirection.rtl,

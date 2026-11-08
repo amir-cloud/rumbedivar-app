@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'core/router_support.dart';
 import 'screens/cart_page.dart';
 import 'screens/catalog_page.dart';
+import 'screens/category_products_page.dart';
 import 'screens/checkout_page.dart';
 import 'screens/home_page.dart';
 import 'screens/login_page.dart';
@@ -16,6 +17,7 @@ import 'screens/orders_page.dart';
 import 'screens/product_detail_page.dart';
 import 'screens/profile_page.dart';
 import 'screens/register_page.dart';
+import 'screens/search_page.dart';
 import 'screens/splash_page.dart';
 import 'widgets/app_nav.dart';
 import 'widgets/shell_app_bar.dart';
@@ -76,7 +78,7 @@ CustomTransitionPage<void> _slideRightPage({
         },
       );
 
-      return ColoredBox(
+      return Material(
         color: const Color(0xFFC30960),
         child: page,
       );
@@ -150,6 +152,13 @@ GoRouter createRouter(AuthState authState, {String initialLocation = '/splash'})
             ),
           ),
           GoRoute(
+            path: '/search',
+            pageBuilder: (context, state) => _slideRightPage(
+              state: state,
+              child: const SearchPage(),
+            ),
+          ),
+          GoRoute(
             path: '/cart',
             pageBuilder: (context, state) => _slideRightPage(
               state: state,
@@ -162,6 +171,17 @@ GoRouter createRouter(AuthState authState, {String initialLocation = '/splash'})
               state: state,
               child: const OrdersPage(),
             ),
+          ),
+          GoRoute(
+            path: '/category/:id',
+            pageBuilder: (context, state) {
+              final id = state.pathParameters['id'] ?? '';
+              final name = state.extra is String ? state.extra as String : null;
+              return _slideRightPage(
+                state: state,
+                child: CategoryProductsPage(categoryId: id, categoryName: name),
+              );
+            },
           ),
           GoRoute(
             path: '/profile',

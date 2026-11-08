@@ -117,9 +117,17 @@ class ProductsNotifier extends StateNotifier<ProductsState> {
   void setQuery(ProductQuery q) => loadFirst(q);
 }
 
-final productsProvider =
+final searchProductsProvider =
     StateNotifierProvider<ProductsNotifier, ProductsState>(
         (ref) => ProductsNotifier(ref.watch(catalogServiceProvider)));
+
+final categoryProductsProvider = StateNotifierProvider.autoDispose
+    .family<ProductsNotifier, ProductsState, String>(
+        (ref, categoryId) {
+  final notifier = ProductsNotifier(ref.watch(catalogServiceProvider));
+  notifier.loadFirst(ProductQuery(category: categoryId));
+  return notifier;
+});
 
 final productDetailProvider =
     FutureProvider.family<Product?, int>((ref, id) async {

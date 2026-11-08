@@ -218,7 +218,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
               const SizedBox(height: 12),
               ElevatedButton(
                 onPressed: () => context.go('/catalog'),
-                child: const Text('رفتن به کاتالوگ'),
+                child: const Text('رفتن به دسته بندی ها'),
               ),
             ],
           ),

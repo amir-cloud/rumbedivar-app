@@ -23,6 +23,17 @@ class ShellAppBar extends ConsumerWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final loc = location ?? GoRouterState.of(context).uri.path;
+    if (loc.startsWith('/category/')) {
+      final state = GoRouterState.of(context);
+      final name = state.extra is String ? state.extra as String : 'محصولات';
+      return AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.pop(),
+        ),
+        title: Text(name),
+      );
+    }
     switch (loc) {
       case '/home':
         return AppBar(
@@ -39,7 +50,9 @@ class ShellAppBar extends ConsumerWidget implements PreferredSizeWidget {
           ],
         );
       case '/catalog':
-        return AppBar(title: const Text('کاتالوگ'));
+        return AppBar(title: const Text('دسته بندی ها'));
+      case '/search':
+        return AppBar(title: const Text('جستجو'));
       case '/cart':
         final cart = ref.watch(cartProvider);
         return AppBar(
