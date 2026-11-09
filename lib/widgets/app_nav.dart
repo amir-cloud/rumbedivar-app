@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../core/page_transitions.dart';
 import '../providers/app_providers.dart';
 
 /// Bottom nav derived from GET /config api toggles (Issue #2 Step 7).
@@ -56,7 +57,17 @@ class AppBottomNav extends ConsumerWidget {
       child: BottomNavigationBar(
         currentIndex: index,
         type: BottomNavigationBarType.fixed,
-        onTap: (i) => context.go(items[i].route),
+        onTap: (i) {
+          // Tabs are laid out RTL (index 0 sits at the visual right), so
+          // mirror to visual order: a tap left of the active tab pulls the
+          // next page in from the left, a tap right slides it from the right.
+          final n = items.length;
+          PageTransitionTracker.instance.setTabDirection(
+            fromIndex: n - 1 - index,
+            toIndex: n - 1 - i,
+          );
+          context.go(items[i].route);
+        },
         items: items
             .map((e) => BottomNavigationBarItem(
                 icon: Icon(e.icon), label: e.label))

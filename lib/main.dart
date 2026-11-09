@@ -1,9 +1,8 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'core/page_transitions.dart';
 import 'core/router_support.dart';
 import 'screens/cart_page.dart';
 import 'screens/catalog_page.dart';
@@ -22,72 +21,8 @@ import 'screens/splash_page.dart';
 import 'widgets/app_nav.dart';
 import 'widgets/shell_app_bar.dart';
 
-CustomTransitionPage<void> _slideRightPage({
-  required GoRouterState state,
-  required Widget child,
-}) {
-  return CustomTransitionPage<void>(
-    key: state.pageKey,
-    child: child,
-    transitionDuration: const Duration(milliseconds: 300),
-    reverseTransitionDuration: const Duration(milliseconds: 300),
-    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      final enterCurve = CurvedAnimation(
-        parent: animation,
-        curve: Curves.easeOutCubic,
-        reverseCurve: Curves.easeInCubic,
-      );
-      final exitCurve = CurvedAnimation(
-        parent: secondaryAnimation,
-        curve: Curves.easeInOutCubic,
-      );
-
-      final slideTween = Tween<Offset>(
-        begin: const Offset(1.0, 0.0),
-        end: Offset.zero,
-      );
-      final fadeTween = Tween<double>(begin: 0.92, end: 1.0);
-
-      // Incoming page slides from right with a soft fade.
-      Widget page = FadeTransition(
-        opacity: fadeTween.animate(enterCurve),
-        child: SlideTransition(
-          position: slideTween.animate(enterCurve),
-          child: child,
-        ),
-      );
-
-      // When this page is being covered by a new one, blur and ease it back.
-      page = AnimatedBuilder(
-        animation: exitCurve,
-        child: page,
-        builder: (context, child) {
-          final v = exitCurve.value;
-          if (v <= 0) return child!;
-          final blur = v * 5.5;
-          return Transform.scale(
-            scale: 1 - (v * 0.03),
-            child: Opacity(
-              opacity: 1 - (v * 0.08),
-              child: ImageFiltered(
-                imageFilter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-                child: child,
-              ),
-            ),
-          );
-        },
-      );
-
-      return Material(
-        color: const Color(0xFFC30960),
-        child: page,
-      );
-    },
-  );
-}
-
 GoRouter createRouter(AuthState authState, {String initialLocation = '/splash'}) {
-  return GoRouter(
+  final router = GoRouter(
     initialLocation: initialLocation,
     refreshListenable: authState,
     redirect: (context, state) {
@@ -102,28 +37,28 @@ GoRouter createRouter(AuthState authState, {String initialLocation = '/splash'})
     routes: [
       GoRoute(
         path: '/splash',
-        pageBuilder: (context, state) => _slideRightPage(
+        pageBuilder: (context, state) => directionalSlidePage(
           state: state,
           child: const SplashPage(),
         ),
       ),
       GoRoute(
         path: '/onboarding',
-        pageBuilder: (context, state) => _slideRightPage(
+        pageBuilder: (context, state) => directionalSlidePage(
           state: state,
           child: const OnboardingPage(),
         ),
       ),
       GoRoute(
         path: '/login',
-        pageBuilder: (context, state) => _slideRightPage(
+        pageBuilder: (context, state) => directionalSlidePage(
           state: state,
           child: const LoginPage(),
         ),
       ),
       GoRoute(
         path: '/register',
-        pageBuilder: (context, state) => _slideRightPage(
+        pageBuilder: (context, state) => directionalSlidePage(
           state: state,
           child: const RegisterPage(),
         ),
@@ -139,35 +74,35 @@ GoRouter createRouter(AuthState authState, {String initialLocation = '/splash'})
         routes: [
           GoRoute(
             path: '/home',
-            pageBuilder: (context, state) => _slideRightPage(
+            pageBuilder: (context, state) => directionalSlidePage(
               state: state,
               child: const HomePage(),
             ),
           ),
           GoRoute(
             path: '/catalog',
-            pageBuilder: (context, state) => _slideRightPage(
+            pageBuilder: (context, state) => directionalSlidePage(
               state: state,
               child: const CatalogPage(),
             ),
           ),
           GoRoute(
             path: '/search',
-            pageBuilder: (context, state) => _slideRightPage(
+            pageBuilder: (context, state) => directionalSlidePage(
               state: state,
               child: const SearchPage(),
             ),
           ),
           GoRoute(
             path: '/cart',
-            pageBuilder: (context, state) => _slideRightPage(
+            pageBuilder: (context, state) => directionalSlidePage(
               state: state,
               child: const CartPage(),
             ),
           ),
           GoRoute(
             path: '/orders',
-            pageBuilder: (context, state) => _slideRightPage(
+            pageBuilder: (context, state) => directionalSlidePage(
               state: state,
               child: const OrdersPage(),
             ),
@@ -177,7 +112,7 @@ GoRouter createRouter(AuthState authState, {String initialLocation = '/splash'})
             pageBuilder: (context, state) {
               final id = state.pathParameters['id'] ?? '';
               final name = state.extra is String ? state.extra as String : null;
-              return _slideRightPage(
+              return directionalSlidePage(
                 state: state,
                 child: CategoryProductsPage(categoryId: id, categoryName: name),
               );
@@ -185,7 +120,7 @@ GoRouter createRouter(AuthState authState, {String initialLocation = '/splash'})
           ),
           GoRoute(
             path: '/profile',
-            pageBuilder: (context, state) => _slideRightPage(
+            pageBuilder: (context, state) => directionalSlidePage(
               state: state,
               child: const ProfilePage(),
             ),
@@ -196,7 +131,7 @@ GoRouter createRouter(AuthState authState, {String initialLocation = '/splash'})
         path: '/product/:id',
         pageBuilder: (context, state) {
           final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
-          return _slideRightPage(
+          return directionalSlidePage(
             state: state,
             child: ProductDetailPage(id: id),
           );
@@ -204,7 +139,7 @@ GoRouter createRouter(AuthState authState, {String initialLocation = '/splash'})
       ),
       GoRoute(
         path: '/checkout',
-        pageBuilder: (context, state) => _slideRightPage(
+        pageBuilder: (context, state) => directionalSlidePage(
           state: state,
           child: const CheckoutPage(),
         ),
@@ -213,18 +148,20 @@ GoRouter createRouter(AuthState authState, {String initialLocation = '/splash'})
         path: '/orders/:id',
         pageBuilder: (context, state) {
           final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
-          return _slideRightPage(
+          return directionalSlidePage(
             state: state,
             child: OrderDetailPage(id: id),
           );
         },
       ),
     ],
-    errorPageBuilder: (context, state) => _slideRightPage(
+    errorPageBuilder: (context, state) => directionalSlidePage(
       state: state,
       child: FriendlyErrorPage(message: state.error?.toString() ?? 'خطا'),
     ),
   );
+  watchRouterForDirection(router);
+  return router;
 }
 
 void main() async {
