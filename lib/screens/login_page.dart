@@ -104,7 +104,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.15),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.white70),
+                          border: Border.all(color: Colors.white),
                         ),
                         child: Text(
                           _error!,
@@ -130,7 +130,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       style: const TextStyle(color: Colors.white),
                       decoration: _inputDecoration('رمز عبور', Icons.lock).copyWith(
                         suffixIcon: IconButton(
-                          icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off, color: Colors.white70),
+                          tooltip: 'نمایش رمز',
+                          icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off,
+                              color: Colors.white),
                           onPressed: () => setState(() => _obscure = !_obscure),
                         ),
                       ),
@@ -205,8 +207,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   InputDecoration _inputDecoration(String label, IconData icon) {
     return InputDecoration(
       labelText: label,
-      labelStyle: const TextStyle(color: Colors.white70),
-      prefixIcon: Icon(icon, color: Colors.white70),
+      labelStyle: const TextStyle(color: Colors.white),
+      prefixIcon: Icon(icon, color: Colors.white),
       filled: true,
       fillColor: Colors.white.withOpacity(0.12),
       border: OutlineInputBorder(

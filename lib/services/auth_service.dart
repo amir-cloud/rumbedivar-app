@@ -38,8 +38,8 @@ class AuthService {
             'تلاش زیاد — لطفا چند دقیقه بعد دوباره امتحان کنید');
       }
       return AuthResult.failure(e.message);
-    } catch (e) {
-      return AuthResult.failure('Network error: $e');
+    } catch (_) {
+      return AuthResult.failure('خطا در اتصال — اینترنت را بررسی کنید');
     }
   }
 
@@ -66,8 +66,8 @@ class AuthService {
         return AuthResult.failure('ثبت‌نام فعلا غیرفعال است');
       }
       return AuthResult.failure(e.message);
-    } catch (e) {
-      return AuthResult.failure('Network error: $e');
+    } catch (_) {
+      return AuthResult.failure('خطا در اتصال — اینترنت را بررسی کنید');
     }
   }
 
@@ -88,4 +88,11 @@ class AuthService {
   }
 
   Future<void> logout() => clearToken();
+
+  /// DELETE /customer — Play Data Safety + Apple 5.1.1(v) account deletion.
+  /// Backend must implement DELETE; falls back to AppError if missing.
+  Future<void> deleteAccount() async {
+    await _api.delete('/customer');
+    await clearToken();
+  }
 }

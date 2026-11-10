@@ -5,7 +5,14 @@
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
-	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<string>fa</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>fa</string>
+		<string>en</string>
+	</array>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>CFBundleDisplayName</key>
 	<string>Rumbedivar</string>
 	<key>CFBundleExecutable</key>

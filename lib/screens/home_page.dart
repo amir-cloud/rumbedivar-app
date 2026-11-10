@@ -18,7 +18,6 @@ class HomePage extends ConsumerStatefulWidget {
 
 class _HomePageState extends ConsumerState<HomePage> {
   final _lock = AppLockService();
-  bool _appLock = false;
   bool _noPreview = true;
 
   @override
@@ -28,11 +27,9 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   Future<void> _loadPrefs() async {
-    final l = await _lock.isLockEnabled();
     final n = await _lock.isNoPreviewEnabled();
     if (!mounted) return;
     setState(() {
-      _appLock = l;
       _noPreview = n;
     });
   }
@@ -55,7 +52,11 @@ class _HomePageState extends ConsumerState<HomePage> {
           children: [
             me.when(
               loading: () => const SizedBox.shrink(),
-              error: (_, __) => const SizedBox.shrink(),
+              error: (_, __) => const Text(
+                'خطا در بارگذاری حساب — برای تلاش مجدد بکشید',
+                textDirection: TextDirection.rtl,
+                style: TextStyle(fontSize: 12, color: Colors.white),
+              ),
               data: (u) => Text(
                 'خوش آمدید ${u?.displayName ?? u?.username ?? ''}',
                 style:
@@ -66,9 +67,21 @@ class _HomePageState extends ConsumerState<HomePage> {
             const SizedBox(height: 16),
             boot.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (_, __) => const Text(
-                'فروشگاه موقتا در دسترس نیست — دوباره بکشید',
-                textDirection: TextDirection.rtl,
+              error: (_, __) => Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'فروشگاه موقتا در دسترس نیست',
+                      textDirection: TextDirection.rtl,
+                    ),
+                    const SizedBox(height: 8),
+                    ElevatedButton(
+                      onPressed: () => ref.invalidate(bootProvider),
+                      child: const Text('تلاش مجدد'),
+                    ),
+                  ],
+                ),
               ),
               data: (b) => _landingBody(b.landing, b.store.currencySymbol),
             ),
@@ -83,20 +96,11 @@ class _HomePageState extends ConsumerState<HomePage> {
             ),
             const SizedBox(height: 12),
             SwitchListTile(
-              title: const Text('قفل اپ', textDirection: TextDirection.rtl),
-              subtitle: const Text('TODO: biometric via local_auth',
-                  textDirection: TextDirection.ltr,
-                  style: TextStyle(fontSize: 11)),
-              value: _appLock,
-              onChanged: (v) async {
-                await _lock.setLockEnabled(v);
-                if (!mounted) return;
-                setState(() => _appLock = v);
-              },
-            ),
-            SwitchListTile(
               title: const Text('اعلان بدون پیش‌نمایش',
                   textDirection: TextDirection.rtl),
+              subtitle: const Text('متن پیامک بدون نام محصول',
+                  textDirection: TextDirection.rtl,
+                  style: TextStyle(fontSize: 11, color: Colors.white)),
               value: _noPreview,
               onChanged: (v) async {
                 await _lock.setNoPreviewEnabled(v);
@@ -130,7 +134,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                           fontSize: 22, fontWeight: FontWeight.w800)),
                   const SizedBox(height: 6),
                   Text(landing.heroSubtitle,
-                      style: const TextStyle(color: Colors.grey)),
+                      style: const TextStyle(color: Colors.black87)),
                   if ((landing.heroImage as String).isNotEmpty) ...[
                     const SizedBox(height: 12),
                     ClipRRect(
@@ -140,6 +144,12 @@ class _HomePageState extends ConsumerState<HomePage> {
                         height: 160,
                         width: double.infinity,
                         fit: BoxFit.cover,
+                        memCacheWidth: 800,
+                        maxWidthDiskCache: 800,
+                        placeholder: (_, __) => Container(
+                          height: 160,
+                          color: Colors.black12,
+                        ),
                         errorWidget: (_, __, ___) => const SizedBox.shrink(),
                       ),
                     ),
@@ -179,7 +189,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 style: TextStyle(fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             SizedBox(
-              height: 44,
+              height: 48,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: categories.length,
@@ -188,6 +198,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                   final c = categories[i] as Map;
                   return ActionChip(
                     label: Text('${c['name'] ?? ''}'),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 12),
                     onPressed: () => context.go('/catalog'),
                   );
                 },
@@ -201,7 +213,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             const SizedBox(height: 8),
             if (featured.isEmpty)
               const Text('به‌زودی — از تنظیمات لندینگ WP اضافه کنید',
-                  style: TextStyle(color: Colors.grey))
+                  style: TextStyle(color: Colors.black87))
             else
               SizedBox(
                 height: 180,
@@ -222,6 +234,11 @@ class _HomePageState extends ConsumerState<HomePage> {
                                   ? CachedNetworkImage(
                                       imageUrl: img,
                                       fit: BoxFit.cover,
+                                      memCacheWidth: 400,
+                                      maxWidthDiskCache: 800,
+                                      placeholder: (_, __) => Container(
+                                        color: Colors.black12,
+                                      ),
                                       errorWidget: (_, __, ___) =>
                                           const Icon(Icons.image),
                                     )
@@ -244,13 +261,13 @@ class _HomePageState extends ConsumerState<HomePage> {
             const Padding(
               padding: EdgeInsets.only(top: 16),
               child: Text('پرفروش‌ترین‌ها (به‌زودی: Step 3 کاتالوگ)',
-                  style: TextStyle(color: Colors.grey)),
+                  style: TextStyle(color: Colors.black87)),
             ),
           if (landing.showNewArrivals)
             const Padding(
               padding: EdgeInsets.only(top: 8),
               child: Text('جدیدترین‌ها (به‌زودی: Step 3 کاتالوگ)',
-                  style: TextStyle(color: Colors.grey)),
+                  style: TextStyle(color: Colors.black87)),
             ),
         ],
       ),

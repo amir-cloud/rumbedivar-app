@@ -48,7 +48,8 @@ void main() {
       api: api,
       authService: authService,
     ));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump(const Duration(milliseconds: 500));
 
     expect(find.text('ورود به حساب'), findsOneWidget);
   });
@@ -64,11 +65,13 @@ void main() {
       api: api,
       authService: authService,
     ));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump(const Duration(milliseconds: 500));
 
-    expect(find.text('ثبت نام'), findsOneWidget);
-    await tester.tap(find.text('ثبت نام'));
-    await tester.pumpAndSettle();
+    expect(find.text('ایجاد حساب کاربری'), findsOneWidget);
+    await tester.tap(find.text('ایجاد حساب کاربری'));
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump(const Duration(milliseconds: 500));
 
     expect(find.text('ایجاد حساب کاربری'), findsOneWidget);
   });

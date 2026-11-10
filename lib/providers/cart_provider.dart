@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/cart.dart';
@@ -8,9 +9,8 @@ import '../models/product.dart';
 import 'app_providers.dart';
 
 /// Local cart (Issue #2 Step 4 decision).
-/// Riverpod + SharedPreferences persistence — survives kill-restart,
-/// unlike plugin cart/* server-session. Clamped by
-/// ordering.max_quantity_per_item, gated by min_order_amount at UI.
+/// Riverpod + encrypted storage — survives kill-restart, excluded from
+/// Auto Backup, never in plaintext prefs (discreet-commerce PII).
 class CartState {
   final List<CartItem> items;
   final bool loaded;
@@ -25,10 +25,18 @@ class CartState {
 }
 
 class CartNotifier extends StateNotifier<CartState> {
-  CartNotifier(this._ref) : super(const CartState()) {
+  CartNotifier(this._ref, [FlutterSecureStorage? storage])
+      : _secure = storage ??
+            const FlutterSecureStorage(
+              aOptions: AndroidOptions(encryptedSharedPreferences: true),
+              iOptions: IOSOptions(
+                  accessibility: KeychainAccessibility.first_unlock_this_device),
+            ),
+        super(const CartState()) {
     _restore();
   }
   final Ref _ref;
+  final FlutterSecureStorage _secure;
   static const _key = 'local_cart_v1';
 
   int get _maxQty {
@@ -45,9 +53,13 @@ class CartNotifier extends StateNotifier<CartState> {
 
   Future<void> _restore() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final raw = prefs.getString(_key);
+      final raw = await _secure.read(key: _key);
       if (raw == null || raw.isEmpty) {
+        // Best-effort: wipe legacy plaintext prefs cart if present.
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.remove(_key);
+        } catch (_) {}
         state = state.copyWith(loaded: true);
         return;
       }
@@ -64,9 +76,9 @@ class CartNotifier extends StateNotifier<CartState> {
 
   Future<void> _persist() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(
-          _key, jsonEncode(state.items.map((e) => e.toJson()).toList()));
+      await _secure.write(
+          key: _key,
+          value: jsonEncode(state.items.map((e) => e.toJson()).toList()));
     } catch (_) {}
   }
 

@@ -22,7 +22,7 @@ class AppError implements Exception {
   }
 
   factory AppError.network(Object e) =>
-      AppError('network', 'Network error: $e');
+      const AppError('network', 'خطا در اتصال — اینترنت را بررسی کنید');
 
   bool get isAuth => code == 'unauthorized';
   bool get isDisabled => code == 'endpoint_disabled';

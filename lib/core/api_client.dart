@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -11,7 +12,14 @@ import 'app_error.dart';
 class ApiClient {
   ApiClient({http.Client? httpClient, FlutterSecureStorage? storage})
       : _http = httpClient ?? http.Client(),
-        _storage = storage ?? const FlutterSecureStorage();
+        _storage = storage ??
+            const FlutterSecureStorage(
+              aOptions: AndroidOptions(encryptedSharedPreferences: true),
+              iOptions: IOSOptions(
+                  accessibility: KeychainAccessibility.first_unlock_this_device),
+            );
+
+  static const Duration _timeout = Duration(seconds: 15);
 
   static const String _tokenKey = 'auth_token';
 
@@ -34,10 +42,12 @@ class ApiClient {
 
   Future<dynamic> get(String path, {bool auth = true}) async {
     return _send(() async {
-      final res = await _http.get(
-        Uri.parse('$_apiBase$path'),
-        headers: await _headers(auth: auth),
-      );
+      final res = await _http
+          .get(
+            Uri.parse('$_apiBase$path'),
+            headers: await _headers(auth: auth),
+          )
+          .timeout(_timeout);
       return res;
     }, auth: auth);
   }
@@ -45,11 +55,13 @@ class ApiClient {
   Future<dynamic> post(String path, Map<String, dynamic>? body,
       {bool auth = true}) async {
     return _send(() async {
-      final res = await _http.post(
-        Uri.parse('$_apiBase$path'),
-        headers: await _headers(auth: auth),
-        body: jsonEncode(body ?? {}),
-      );
+      final res = await _http
+          .post(
+            Uri.parse('$_apiBase$path'),
+            headers: await _headers(auth: auth),
+            body: jsonEncode(body ?? {}),
+          )
+          .timeout(_timeout);
       return res;
     }, auth: auth);
   }
@@ -57,21 +69,25 @@ class ApiClient {
   Future<dynamic> put(String path, Map<String, dynamic>? body,
       {bool auth = true}) async {
     return _send(() async {
-      final res = await _http.put(
-        Uri.parse('$_apiBase$path'),
-        headers: await _headers(auth: auth),
-        body: jsonEncode(body ?? {}),
-      );
+      final res = await _http
+          .put(
+            Uri.parse('$_apiBase$path'),
+            headers: await _headers(auth: auth),
+            body: jsonEncode(body ?? {}),
+          )
+          .timeout(_timeout);
       return res;
     }, auth: auth);
   }
 
   Future<dynamic> delete(String path, {bool auth = true}) async {
     return _send(() async {
-      final res = await _http.delete(
-        Uri.parse('$_apiBase$path'),
-        headers: await _headers(auth: auth),
-      );
+      final res = await _http
+          .delete(
+            Uri.parse('$_apiBase$path'),
+            headers: await _headers(auth: auth),
+          )
+          .timeout(_timeout);
       return res;
     }, auth: auth);
   }
@@ -81,8 +97,10 @@ class ApiClient {
     late http.Response res;
     try {
       res = await call();
-    } catch (e) {
-      throw AppError.network(e);
+    } on TimeoutException {
+      throw const AppError('network', 'اتصال کند است — دوباره تلاش کنید');
+    } catch (_) {
+      throw const AppError('network', 'خطا در اتصال — اینترنت را بررسی کنید');
     }
     dynamic decoded;
     try {
@@ -107,11 +125,15 @@ class ApiClient {
 
   Future<bool> _tryRefresh() async {
     try {
-      final res = await _http.post(
-        Uri.parse('$_apiBase/refresh'),
-        headers: await _headers(auth: true),
-        body: jsonEncode({}),
-      );
+      // Do not attach expired bearer to refresh call.
+      final h = <String, String>{'Content-Type': 'application/json'};
+      final res = await _http
+          .post(
+            Uri.parse('$_apiBase/refresh'),
+            headers: h,
+            body: jsonEncode({}),
+          )
+          .timeout(_timeout);
       if (res.statusCode >= 200 && res.statusCode < 300) {
         final body = jsonDecode(res.body);
         if (body is Map<String, dynamic>) {

@@ -21,7 +21,7 @@ class PlaceholderPage extends StatelessWidget {
               Text(title, style: const TextStyle(fontSize: 20)),
               const SizedBox(height: 12),
               const Text('به‌زودی در این نسخه',
-                  style: TextStyle(color: Colors.grey)),
+                  style: TextStyle(color: Colors.black87)),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => context.go('/home'),
@@ -43,16 +43,52 @@ class FriendlyErrorPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fa = code == 'endpoint_disabled'
-        ? 'این بخش فعلا غیرفعال است'
-        : code == 'wc_inactive'
-            ? 'فروشگاه موقتا در دسترس نیست'
-            : message;
+    final fa = switch (code) {
+      'endpoint_disabled' => 'این بخش فعلا غیرفعال است',
+      'wc_inactive' => 'فروشگاه موقتا در دسترس نیست',
+      'not_found' => 'محصول یا سفارش یافت نشد',
+      'unauthorized' => 'نشست منقضی شد — لطفا دوباره وارد شوید',
+      'network' => 'خطا در اتصال — اینترنت را بررسی کنید',
+      _ => message.startsWith('AppError') || message.contains('Exception')
+          ? 'خطایی رخ داد — دوباره تلاش کنید'
+          : message,
+    };
     return Scaffold(
       appBar: AppBar(title: const Text('خطا')),
       body: Directionality(
         textDirection: TextDirection.rtl,
-        child: Center(child: Text(fa)),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(fa, textAlign: TextAlign.center),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () => context.go('/home'),
+                      child: const Text('بازگشت به خانه'),
+                    ),
+                    const SizedBox(width: 12),
+                    OutlinedButton(
+                      onPressed: () {
+                        if (context.canPop()) {
+                          context.pop();
+                        } else {
+                          context.go('/home');
+                        }
+                      },
+                      child: const Text('تلاش مجدد'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

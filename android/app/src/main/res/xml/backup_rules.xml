@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <!-- Discreet cart excluded from Auto Backup (plaintext PII) -->
+    <exclude domain="sharedpref" path="local_cart_v1"/>
+    <exclude domain="sharedpref" path="FlutterSecureStorage"/>
+</full-backup-content>

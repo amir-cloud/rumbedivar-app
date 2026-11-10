@@ -16,6 +16,10 @@ class ShellAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
   Future<void> _logout(BuildContext context, WidgetRef ref) async {
     await ref.read(authServiceProvider).logout();
+    await ref.read(cartProvider.notifier).clear();
+    ref.invalidate(customerProvider);
+    ref.invalidate(meProvider);
+    ref.invalidate(ordersProvider);
     appAuthState.setToken(null);
     if (context.mounted) context.go('/login');
   }
@@ -28,8 +32,15 @@ class ShellAppBar extends ConsumerWidget implements PreferredSizeWidget {
       final name = state.extra is String ? state.extra as String : 'محصولات';
       return AppBar(
         leading: IconButton(
+          tooltip: 'بازگشت',
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/catalog');
+            }
+          },
         ),
         title: Text(name),
       );
@@ -40,10 +51,12 @@ class ShellAppBar extends ConsumerWidget implements PreferredSizeWidget {
           title: const Text('روم به دیوار'),
           actions: [
             IconButton(
+              tooltip: 'پروفایل',
               onPressed: () => context.go('/profile'),
               icon: const Icon(Icons.person),
             ),
             IconButton(
+              tooltip: 'خروج',
               onPressed: () => _logout(context, ref),
               icon: const Icon(Icons.logout),
             ),
@@ -60,6 +73,7 @@ class ShellAppBar extends ConsumerWidget implements PreferredSizeWidget {
           actions: [
             if (cart.items.isNotEmpty)
               IconButton(
+                tooltip: 'پاک کردن سبد',
                 icon: const Icon(Icons.delete_outline),
                 onPressed: () => ref.read(cartProvider.notifier).clear(),
               ),
@@ -72,6 +86,7 @@ class ShellAppBar extends ConsumerWidget implements PreferredSizeWidget {
           title: const Text('پروفایل'),
           actions: [
             IconButton(
+              tooltip: 'خروج',
               icon: const Icon(Icons.logout),
               onPressed: () => _logout(context, ref),
             ),

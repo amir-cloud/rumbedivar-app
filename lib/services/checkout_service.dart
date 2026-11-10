@@ -56,7 +56,7 @@ class CheckoutService {
     final c = code.trim();
     if (c.isEmpty) return null;
     try {
-      final j = await _api.get('/coupons/$c');
+      final j = await _api.get('/coupons/${Uri.encodeComponent(c)}');
       if (j is Map<String, dynamic>) return CouponInfo.fromJson(j, c);
       return null;
     } on AppError {

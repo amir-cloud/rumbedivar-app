@@ -85,4 +85,9 @@ class CustomerService {
     if (j is Map<String, dynamic>) return Customer.fromJson(j);
     return null;
   }
+
+  /// DELETE /customer — account + data deletion (store compliance).
+  Future<void> deleteAccount() async {
+    await _api.delete('/customer');
+  }
 }

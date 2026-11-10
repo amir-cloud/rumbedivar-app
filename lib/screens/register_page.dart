@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/app_error.dart';
+import '../core/router_support.dart';
 import '../providers/app_providers.dart';
 import '../widgets/animated_brand_background.dart';
 
@@ -48,6 +49,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     if (!mounted) return;
     setState(() => _loading = false);
     if (r.success) {
+      // Sync router guard with new token (matches login flow).
+      final token = await ref.read(authServiceProvider).getToken();
+      appAuthState.setToken(token);
+      if (!mounted) return;
       context.go('/home');
     } else {
       setState(() => _error = r.error ?? 'ثبت‌نام ناموفق بود');
@@ -112,7 +117,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.15),
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: Colors.white70),
+                border: Border.all(color: Colors.white),
               ),
               child: Text(
                 message,
@@ -178,7 +183,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.white70),
+                    border: Border.all(color: Colors.white),
                   ),
                   child: Text(
                     _error!,
@@ -213,7 +218,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 style: const TextStyle(color: Colors.white),
                 decoration: _inputDecoration('رمز عبور', Icons.lock).copyWith(
                   suffixIcon: IconButton(
-                    icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off, color: Colors.white70),
+                    tooltip: 'نمایش رمز',
+                    icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off,
+                        color: Colors.white),
                     onPressed: () => setState(() => _obscure = !_obscure),
                   ),
                 ),
@@ -282,8 +289,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   InputDecoration _inputDecoration(String label, IconData icon) {
     return InputDecoration(
       labelText: label,
-      labelStyle: const TextStyle(color: Colors.white70),
-      prefixIcon: Icon(icon, color: Colors.white70),
+      labelStyle: const TextStyle(color: Colors.white),
+      prefixIcon: Icon(icon, color: Colors.white),
       filled: true,
       fillColor: Colors.white.withOpacity(0.12),
       border: OutlineInputBorder(

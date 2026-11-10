@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -35,6 +37,10 @@ GoRouter createRouter(AuthState authState, {String initialLocation = '/splash'})
       return null;
     },
     routes: [
+      GoRoute(
+        path: '/',
+        redirect: (_, __) => '/splash',
+      ),
       GoRoute(
         path: '/splash',
         pageBuilder: (context, state) => directionalSlidePage(
@@ -130,7 +136,15 @@ GoRouter createRouter(AuthState authState, {String initialLocation = '/splash'})
       GoRoute(
         path: '/product/:id',
         pageBuilder: (context, state) {
-          final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+          final id = int.tryParse(state.pathParameters['id'] ?? '');
+          if (id == null || id <= 0) {
+            return directionalSlidePage(
+              state: state,
+              child: const FriendlyErrorPage(
+                  message: 'محصول یا سفارش یافت نشد',
+                  code: 'not_found'),
+            );
+          }
           return directionalSlidePage(
             state: state,
             child: ProductDetailPage(id: id),
@@ -147,7 +161,15 @@ GoRouter createRouter(AuthState authState, {String initialLocation = '/splash'})
       GoRoute(
         path: '/orders/:id',
         pageBuilder: (context, state) {
-          final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+          final id = int.tryParse(state.pathParameters['id'] ?? '');
+          if (id == null || id <= 0) {
+            return directionalSlidePage(
+              state: state,
+              child: const FriendlyErrorPage(
+                  message: 'محصول یا سفارش یافت نشد',
+                  code: 'not_found'),
+            );
+          }
           return directionalSlidePage(
             state: state,
             child: OrderDetailPage(id: id),
@@ -157,7 +179,8 @@ GoRouter createRouter(AuthState authState, {String initialLocation = '/splash'})
     ],
     errorPageBuilder: (context, state) => directionalSlidePage(
       state: state,
-      child: FriendlyErrorPage(message: state.error?.toString() ?? 'خطا'),
+      child: const FriendlyErrorPage(
+          message: 'خطایی رخ داد — دوباره تلاش کنید', code: 'unknown'),
     ),
   );
   watchRouterForDirection(router);
@@ -166,6 +189,17 @@ GoRouter createRouter(AuthState authState, {String initialLocation = '/splash'})
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  FlutterError.onError = (details) {
+    FlutterError.presentError(details);
+    if (kDebugMode) debugPrint(details.toString());
+  };
+  ErrorWidget.builder = (details) => const MaterialApp(
+        home: Directionality(
+          textDirection: TextDirection.rtl,
+          child: FriendlyErrorPage(
+              message: 'خطایی رخ داد — دوباره تلاش کنید', code: 'unknown'),
+        ),
+      );
   await appAuthState.boot();
   runApp(ProviderScope(child: MainApp(router: createRouter(appAuthState))));
 }
@@ -179,9 +213,21 @@ class MainApp extends StatelessWidget {
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       routerConfig: router,
+      locale: const Locale('fa', 'IR'),
+      supportedLocales: const [Locale('fa', 'IR'), Locale('en', 'US')],
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      builder: (context, child) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: child ?? const SizedBox.shrink(),
+      ),
       theme: ThemeData(
         useMaterial3: true,
         fontFamily: 'IRANSans',
+        fontFamilyFallback: const ['Vazirmatn', 'sans-serif'],
         scaffoldBackgroundColor: const Color(0xFFC30960),
         canvasColor: const Color(0xFFC30960),
       ),

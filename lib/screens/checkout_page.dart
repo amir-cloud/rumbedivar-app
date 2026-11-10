@@ -103,9 +103,9 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
       if (!mounted) return;
       setState(() => _ratesError =
           e.code == 'endpoint_disabled' ? 'محاسبه ارسال فعلا غیرفعال است' : e.message);
-    } catch (e) {
+    } catch (_) {
       if (!mounted) return;
-      setState(() => _ratesError = 'خطا در محاسبه ارسال: $e');
+      setState(() => _ratesError = 'خطا در محاسبه ارسال');
     } finally {
       if (mounted) setState(() => _loadingRates = false);
     }
@@ -124,7 +124,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     } on AppError catch (e) {
       if (!mounted) return;
       setState(() => _couponError = e.message);
-    } catch (e) {
+    } catch (_) {
       if (!mounted) return;
       setState(() => _couponError = 'کد تخفیف معتبر نیست');
     }
@@ -163,7 +163,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
           content: Text(
             'شماره سفارش: ${order.number}\n'
             'پیامک: «بسته شما رسید» — بدون نام محصول\n'
-            '${order.appDiscountApplied ? 'تخفیف اپ اعمال شد ✓\n' : ''}'
+            '${order.appDiscountApplied ? 'تخفیف اپ اعمال شد\n' : ''}'
             'پیک از محتوای بسته اطلاع ندارد.',
             textDirection: TextDirection.rtl,
           ),
@@ -179,9 +179,9 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
       if (!mounted) return;
       setState(() => _submitError =
           e.code == 'endpoint_disabled' ? 'ثبت سفارش فعلا غیرفعال است' : e.message);
-    } catch (e) {
+    } catch (_) {
       if (!mounted) return;
-      setState(() => _submitError = 'ثبت سفارش ناموفق بود: $e');
+      setState(() => _submitError = 'ثبت سفارش ناموفق بود');
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -241,7 +241,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
             padding: const EdgeInsets.all(16),
             children: [
               const Text('بدون نام فروشگاه در هیچ مرحله‌ای',
-                  style: TextStyle(color: Colors.grey)),
+                  style: TextStyle(color: Colors.black87)),
               const SizedBox(height: 12),
               // Billing
               const Text('مشخصات صورتحساب',
@@ -259,13 +259,23 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                 ],
               ),
               _field(_phone, 'موبایل',
-                  keyboard: TextInputType.phone, validator: _req),
-              _field(_addr, 'آدرس', validator: _req),
+                  keyboard: TextInputType.phone,
+                  validator: _phoneReq,
+                  autofill: const [AutofillHints.telephoneNumber],
+                  maxLength: 11),
+              _field(_addr, 'آدرس',
+                  validator: _req,
+                  autofill: const [AutofillHints.streetAddressLine1]),
               Row(
                 children: [
                   Expanded(child: _field(_city, 'شهر', validator: _req)),
                   const SizedBox(width: 8),
-                  Expanded(child: _field(_post, 'کد پستی')),
+                  Expanded(
+                      child: _field(_post, 'کد پستی',
+                          validator: _postReq,
+                          keyboard: TextInputType.number,
+                          autofill: const [AutofillHints.postalCode],
+                          maxLength: 10)),
                 ],
               ),
               CheckboxListTile(
@@ -286,7 +296,11 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                         child: _field(_shipCity, 'شهر تحویل',
                             validator: _req)),
                     const SizedBox(width: 8),
-                    Expanded(child: _field(_shipPost, 'کد پستی')),
+                    Expanded(
+                        child: _field(_shipPost, 'کد پستی',
+                            validator: _postReq,
+                            keyboard: TextInputType.number,
+                            maxLength: 10)),
                   ],
                 ),
               ],
@@ -317,7 +331,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                     setState(() => _delivery = v!),
               ),
               const Text('پیک از محتوای بسته اطلاع ندارد.',
-                  style: TextStyle(color: Colors.grey, fontSize: 12)),
+                  style: TextStyle(color: Colors.black87, fontSize: 12)),
               const SizedBox(height: 12),
               // Shipping preview
               Row(
@@ -361,9 +375,17 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                     style: const TextStyle(color: Colors.red)),
                 data: (list) {
                   if (list.isEmpty) {
-                    return const Text(
-                        'روش پرداخت آفلاینی فعال نیست',
-                        style: TextStyle(color: Colors.red));
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('روش پرداخت آفلاینی فعال نیست',
+                            style: TextStyle(color: Colors.red)),
+                        TextButton(
+                          onPressed: () => ref.invalidate(gatewaysProvider),
+                          child: const Text('تلاش مجدد'),
+                        ),
+                      ],
+                    );
                   }
                   return DropdownButtonFormField<String>(
                     value: _gateway,
@@ -385,7 +407,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
               ),
               const Text('نام در صورتحساب بانکی: RDV*Services',
                   textDirection: TextDirection.rtl,
-                  style: TextStyle(fontSize: 12, color: Colors.grey)),
+                  style: TextStyle(fontSize: 12, color: Colors.black87)),
               const SizedBox(height: 12),
               // Coupon
               Row(
@@ -455,7 +477,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
               const Text(
                 'آیکون اپ: «یادداشت‌ها» • اعلان بدون پیش‌نمایش',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey, fontSize: 12),
+                style: TextStyle(color: Colors.black87, fontSize: 12),
               ),
             ],
           ),
@@ -467,10 +489,26 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
   String? _req(String? v) =>
       (v == null || v.trim().isEmpty) ? 'الزامی' : null;
 
+  String? _phoneReq(String? v) {
+    if (v == null || v.trim().isEmpty) return 'الزامی';
+    if (!RegExp(r'^09\d{9}$').hasMatch(v.trim())) {
+      return 'موبایل معتبر وارد کنید (09...)';
+    }
+    return null;
+  }
+
+  String? _postReq(String? v) {
+    if (v == null || v.trim().isEmpty) return null;
+    if (!RegExp(r'^\d{10}$').hasMatch(v.trim())) return 'کد پستی ۱۰ رقمی';
+    return null;
+  }
+
   Widget _field(TextEditingController c, String label,
       {String? Function(String?)? validator,
       TextInputType? keyboard,
-      int maxLines = 1}) {
+      int maxLines = 1,
+      Iterable<String>? autofill,
+      int? maxLength}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: TextFormField(
@@ -478,11 +516,14 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
         validator: validator,
         keyboardType: keyboard,
         maxLines: maxLines,
+        autofillHints: autofill,
+        maxLength: maxLength,
         decoration: InputDecoration(
           labelText: label,
           border:
               OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           isDense: true,
+          counterText: '',
         ),
       ),
     );
