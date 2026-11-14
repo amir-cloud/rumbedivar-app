@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import '../core/app_error.dart';
 import '../core/router_support.dart';
 import '../providers/app_providers.dart';
-import '../widgets/animated_brand_background.dart';
 
 /// Register gated by enable_registration / 403 registration_disabled (Step 1).
 class RegisterPage extends ConsumerStatefulWidget {
@@ -39,9 +38,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       _loading = true;
       _error = null;
     });
-    final r = await ref
-        .read(authServiceProvider)
-        .register(
+    final r = await ref.read(authServiceProvider).register(
           _usernameController.text.trim(),
           _emailController.text.trim(),
           _passwordController.text,
@@ -49,7 +46,6 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     if (!mounted) return;
     setState(() => _loading = false);
     if (r.success) {
-      // Sync router guard with new token (matches login flow).
       final token = await ref.read(authServiceProvider).getToken();
       appAuthState.setToken(token);
       if (!mounted) return;
@@ -62,79 +58,76 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     final boot = ref.watch(bootProvider);
-    return Scaffold(
-      body: AnimatedBrandBackground(
-        child: SafeArea(
-          child: boot.when(
-            loading: () => const Center(
-              child: CircularProgressIndicator(color: Colors.white),
-            ),
-            error: (e, _) {
-              if (e is AppError && e.isDisabled) {
-                return _messageBody('ثبت‌نام فعلا غیرفعال است');
-              }
-              return _formBody();
-            },
-            data: (b) {
-              if (!b.config.enableRegistration) {
-                return _messageBody('ثبت‌نام فعلا غیرفعال است');
-              }
-              return _formBody();
-            },
-          ),
-        ),
+    return SafeArea(
+      child: boot.when(
+        loading: () => const Center(child: CircularProgressIndicator(color: Colors.white)),
+        error: (e, _) {
+          if (e is AppError && e.isDisabled) {
+            return _messageBody('ثبت‌نام فعلاً غیرفعال است');
+          }
+          return _formBody();
+        },
+        data: (b) {
+          if (!b.config.enableRegistration) {
+            return _messageBody('ثبت‌نام فعلاً غیرفعال است');
+          }
+          return _formBody();
+        },
       ),
     );
   }
 
   Widget _messageBody(String message) {
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 28),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.25),
-                    blurRadius: 24,
-                    offset: const Offset(0, 8),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 420),
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(22, 26, 22, 22),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.28)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.12),
+                  blurRadius: 30,
+                  offset: const Offset(0, 14),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 96,
+                  height: 96,
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.18),
+                    shape: BoxShape.circle,
                   ),
-                ],
-              ),
-              child: ClipOval(
-                child: Image.asset('assets/images/logo.png', fit: BoxFit.cover),
-              ),
+                  child: ClipOval(
+                    child: Image.asset('assets/images/logo.png', fit: BoxFit.cover),
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Text(
+                  message,
+                  style: const TextStyle(color: Colors.white, fontSize: 16),
+                  textDirection: TextDirection.rtl,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: () => context.go('/login'),
+                  style: TextButton.styleFrom(foregroundColor: Colors.white),
+                  child: const Text('بازگشت به ورود'),
+                ),
+              ],
             ),
-            const SizedBox(height: 24),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: Colors.white),
-              ),
-              child: Text(
-                message,
-                style: const TextStyle(color: Colors.white, fontSize: 16),
-                textDirection: TextDirection.rtl,
-                textAlign: TextAlign.center,
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextButton(
-              onPressed: () => context.go('/login'),
-              child: const Text(
-                'بازگشت به ورود',
-                style: TextStyle(color: Colors.white, decoration: TextDecoration.underline),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -143,143 +136,169 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   Widget _formBody() {
     return Center(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.25),
-                      blurRadius: 24,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 420),
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(22, 26, 22, 22),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.28)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.12),
+                  blurRadius: 30,
+                  offset: const Offset(0, 14),
                 ),
-                child: ClipOval(
-                  child: Image.asset('assets/images/logo.png', fit: BoxFit.cover),
-                ),
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'ایجاد حساب کاربری',
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.white,
-                ),
-                textDirection: TextDirection.rtl,
-              ),
-              const SizedBox(height: 24),
-              if (_error != null) ...[
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.white),
-                  ),
-                  child: Text(
-                    _error!,
-                    style: const TextStyle(color: Colors.white),
-                    textDirection: TextDirection.rtl,
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                const SizedBox(height: 16),
               ],
-              TextFormField(
-                controller: _usernameController,
-                textDirection: TextDirection.ltr,
-                style: const TextStyle(color: Colors.white),
-                decoration: _inputDecoration('نام کاربری', Icons.person),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'نام کاربری را وارد کنید' : null,
-              ),
-              const SizedBox(height: 14),
-              TextFormField(
-                controller: _emailController,
-                keyboardType: TextInputType.emailAddress,
-                textDirection: TextDirection.ltr,
-                style: const TextStyle(color: Colors.white),
-                decoration: _inputDecoration('ایمیل', Icons.email),
-                validator: (v) => (v == null || !v.contains('@')) ? 'ایمیل معتبر وارد کنید' : null,
-              ),
-              const SizedBox(height: 14),
-              TextFormField(
-                controller: _passwordController,
-                obscureText: _obscure,
-                textDirection: TextDirection.ltr,
-                style: const TextStyle(color: Colors.white),
-                decoration: _inputDecoration('رمز عبور', Icons.lock).copyWith(
-                  suffixIcon: IconButton(
-                    tooltip: 'نمایش رمز',
-                    icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off,
-                        color: Colors.white),
-                    onPressed: () => setState(() => _obscure = !_obscure),
-                  ),
-                ),
-                validator: (v) => (v == null || v.length < 6) ? 'حداقل ۶ کاراکتر' : null,
-                onFieldSubmitted: (_) => _submit(),
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: ElevatedButton(
-                  onPressed: _loading ? null : _submit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: const Color(0xFFC30960),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                  ),
-                  child: _loading
-                      ? const SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(strokeWidth: 2.5),
-                        )
-                      : const Text('ثبت‌نام', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Row(
+            ),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Expanded(child: Divider(color: Colors.white.withValues(alpha: 0.35))),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: Text(
-                      'یا',
-                      style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 13),
+                  Container(
+                    width: 96,
+                    height: 96,
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.18),
+                      shape: BoxShape.circle,
+                    ),
+                    child: ClipOval(
+                      child: Image.asset('assets/images/logo.png', fit: BoxFit.cover),
                     ),
                   ),
-                  Expanded(child: Divider(color: Colors.white.withValues(alpha: 0.35))),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'ایجاد حساب کاربری',
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                    ),
+                    textDirection: TextDirection.rtl,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'اطلاعات خود را وارد کنید',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.white.withValues(alpha: 0.9),
+                    ),
+                    textDirection: TextDirection.rtl,
+                  ),
+                  const SizedBox(height: 20),
+                  if (_error != null) ...[
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withValues(alpha: 0.18),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.35)),
+                      ),
+                      child: Text(
+                        _error!,
+                        style: const TextStyle(color: Colors.white),
+                        textDirection: TextDirection.rtl,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                  ],
+                  TextFormField(
+                    controller: _usernameController,
+                    textDirection: TextDirection.ltr,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: _inputDecoration('نام کاربری', Icons.person_outline),
+                    validator: (v) => (v == null || v.trim().isEmpty) ? 'نام کاربری را وارد کنید' : null,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    textDirection: TextDirection.ltr,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: _inputDecoration('ایمیل', Icons.email_outlined),
+                    validator: (v) => (v == null || !v.contains('@')) ? 'ایمیل معتبر وارد کنید' : null,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _passwordController,
+                    obscureText: _obscure,
+                    textDirection: TextDirection.ltr,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: _inputDecoration('رمز عبور', Icons.lock_outline).copyWith(
+                      suffixIcon: IconButton(
+                        tooltip: 'نمایش رمز',
+                        icon: Icon(
+                          _obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                          color: Colors.white,
+                        ),
+                        onPressed: () => setState(() => _obscure = !_obscure),
+                      ),
+                    ),
+                    validator: (v) => (v == null || v.length < 6) ? 'حداقل ۶ کاراکتر' : null,
+                    onFieldSubmitted: (_) => _submit(),
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton(
+                      onPressed: _loading ? null : _submit,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: const Color(0xFFC30960),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      ),
+                      child: _loading
+                          ? const SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(strokeWidth: 2.5),
+                            )
+                          : const Text('ثبت‌نام', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(child: Divider(color: Colors.white.withValues(alpha: 0.35))),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Text(
+                          'یا',
+                          style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 13),
+                        ),
+                      ),
+                      Expanded(child: Divider(color: Colors.white.withValues(alpha: 0.35))),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: OutlinedButton(
+                      onPressed: () => context.go('/login'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        side: BorderSide(color: Colors.white.withValues(alpha: 0.7), width: 1.4),
+                        backgroundColor: Colors.white.withValues(alpha: 0.06),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      ),
+                      child: const Text(
+                        'ورود به حساب',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ),
                 ],
               ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: OutlinedButton(
-                  onPressed: () => context.go('/login'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    side: BorderSide(color: Colors.white.withValues(alpha: 0.85), width: 1.5),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                    backgroundColor: Colors.white.withValues(alpha: 0.08),
-                  ),
-                  child: const Text(
-                    'ورود به حساب',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -289,21 +308,38 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   InputDecoration _inputDecoration(String label, IconData icon) {
     return InputDecoration(
       labelText: label,
-      labelStyle: const TextStyle(color: Colors.white),
+      labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.95)),
+      floatingLabelStyle: const TextStyle(color: Colors.white),
       prefixIcon: Icon(icon, color: Colors.white),
       filled: true,
-      fillColor: Colors.white.withOpacity(0.12),
+      fillColor: Colors.white.withValues(alpha: 0.12),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+      errorStyle: const TextStyle(
+        color: Color(0xFFFFF1F1),
+        fontSize: 12.5,
+        fontWeight: FontWeight.w500,
+        height: 1.3,
+      ),
+      errorMaxLines: 2,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide.none,
+        borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
+        borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.28)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Colors.white),
+        borderSide: const BorderSide(color: Colors.white, width: 1.4),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: Color(0xFFFFD6D6), width: 1.2),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: Colors.white, width: 1.4),
       ),
     );
   }

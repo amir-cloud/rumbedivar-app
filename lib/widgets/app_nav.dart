@@ -55,6 +55,8 @@ class AppBottomNav extends ConsumerWidget {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: BottomNavigationBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         currentIndex: index,
         type: BottomNavigationBarType.fixed,
         onTap: (i) {

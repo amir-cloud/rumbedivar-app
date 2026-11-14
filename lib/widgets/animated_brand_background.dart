@@ -86,7 +86,6 @@ class _BrandPatternPainter extends CustomPainter {
       paint.style = PaintingStyle.fill;
     }
 
-    // Soft pattern elements (subtle, on-brand).
     blob(Offset(size.width * 0.15, size.height * 0.12), 90,
         Colors.white.withValues(alpha: 0.06), 0.0, 1.0);
     blob(Offset(size.width * 0.88, size.height * 0.18), 70,

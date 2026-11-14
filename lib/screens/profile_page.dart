@@ -9,7 +9,6 @@ import '../providers/app_providers.dart';
 import '../providers/cart_provider.dart';
 
 /// Profile: GET/PUT /customer (Issue #2 Step 6).
-/// Keeps app-privacy toggles (biometric lock, no-preview) from home.
 class ProfilePage extends ConsumerStatefulWidget {
   const ProfilePage({super.key});
 
@@ -52,9 +51,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
       _msg = null;
     });
     try {
-      final updated = await ref
-          .read(customerServiceProvider)
-          .updateCustomer(Customer(
+      final updated = await ref.read(customerServiceProvider).updateCustomer(Customer(
             id: id,
             username: username,
             firstName: _first.text.trim(),
@@ -87,12 +84,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           textDirection: TextDirection.rtl,
         ),
         actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('انصراف')),
-          FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('حذف')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('انصراف')),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('حذف')),
         ],
       ),
     );
@@ -145,17 +138,14 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           ),
         ),
         data: (c) {
-          if (c == null) {
-            return const Center(child: Text('پروفایل یافت نشد'));
-          }
+          if (c == null) return const Center(child: Text('پروفایل یافت نشد'));
           _fill(c);
           return Form(
             key: _form,
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                Text('نام کاربری: ${c.username}',
-                    style: const TextStyle(color: Colors.black87)),
+                Text('نام کاربری: ${c.username}', style: const TextStyle(color: Colors.black87)),
                 const SizedBox(height: 12),
                 _field(_first, 'نام'),
                 _field(_last, 'نام خانوادگی'),
@@ -170,21 +160,25 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                     keyboard: TextInputType.phone,
                     validator: (v) {
                       if (v == null || v.trim().isEmpty) return 'الزامی';
-                      if (!RegExp(r'^09\d{9}$').hasMatch(v.trim())) {
-                        return 'موبایل معتبر وارد کنید (09...)';
-                      }
+                      if (!RegExp(r'^09\d{9}$').hasMatch(v.trim())) return 'موبایل معتبر وارد کنید (09...)';
                       return null;
                     }),
                 if (_msg != null)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 8),
-                    child: Text(_msg!),
+                    child: Text(
+                      _msg!,
+                      style: TextStyle(
+                        color: _msg == 'ذخیره شد' ? Colors.green.shade700 : Theme.of(context).colorScheme.error,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ),
                 SizedBox(
                   height: 48,
                   child: ElevatedButton(
                     onPressed: _saving ? null : () => _save(c.id, c.username),
-                    child: Text(_saving ? 'در حال ذخیره…' : 'ذخیره'),
+                    child: Text(_saving ? 'در حال ذخیره...' : 'ذخیره'),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -196,9 +190,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 const SizedBox(height: 12),
                 OutlinedButton.icon(
                   onPressed: _saving ? null : _deleteAccount,
-                  icon: const Icon(Icons.delete_forever, color: Colors.red),
-                  label: const Text('حذف حساب و داده‌ها',
-                      style: TextStyle(color: Colors.red)),
+                  icon: Icon(Icons.delete_forever, color: Theme.of(context).colorScheme.error),
+                  label: Text('حذف حساب و داده‌ها',
+                      style: TextStyle(color: Theme.of(context).colorScheme.error)),
                 ),
               ],
             ),
@@ -215,13 +209,17 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
       child: TextFormField(
         controller: c,
         keyboardType: keyboard,
-        validator: validator ??
-            (v) =>
-                (v == null || v.trim().isEmpty) ? 'الزامی' : null,
+        validator: validator ?? (v) => (v == null || v.trim().isEmpty) ? 'الزامی' : null,
         decoration: InputDecoration(
           labelText: label,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           isDense: true,
+          errorStyle: TextStyle(
+            color: Theme.of(context).colorScheme.error,
+            fontSize: 12.5,
+            height: 1.3,
+          ),
+          errorMaxLines: 2,
         ),
       ),
     );

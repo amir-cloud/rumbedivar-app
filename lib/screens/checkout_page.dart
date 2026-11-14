@@ -9,9 +9,6 @@ import '../providers/cart_provider.dart';
 import '../widgets/price.dart';
 
 /// Real COD-only checkout (Issue #2 Step 5).
-/// Replaces the fake-door mock: billing + copy-to-shipping, offline
-/// gateways, coupon validation, shipping preview, discreet delivery,
-/// POST /checkout with JWT + is_app_order=true.
 class CheckoutPage extends ConsumerStatefulWidget {
   const CheckoutPage({super.key});
 
@@ -89,9 +86,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     });
     try {
       final items = ref.read(cartProvider).items;
-      final rates = await ref
-          .read(checkoutServiceProvider)
-          .calculateShipping(_shipping, items);
+      final rates = await ref.read(checkoutServiceProvider).calculateShipping(_shipping, items);
       if (!mounted) return;
       setState(() {
         _rates = rates;
@@ -101,8 +96,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
       });
     } on AppError catch (e) {
       if (!mounted) return;
-      setState(() => _ratesError =
-          e.code == 'endpoint_disabled' ? 'محاسبه ارسال فعلا غیرفعال است' : e.message);
+      setState(() => _ratesError = e.code == 'endpoint_disabled' ? 'محاسبه ارسال فعلاً غیرفعال است' : e.message);
     } catch (_) {
       if (!mounted) return;
       setState(() => _ratesError = 'خطا در محاسبه ارسال');
@@ -112,13 +106,9 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
   }
 
   Future<void> _validateCoupon() async {
-    setState(() {
-      _couponError = null;
-    });
+    setState(() => _couponError = null);
     try {
-      final info = await ref
-          .read(checkoutServiceProvider)
-          .validateCoupon(_coupon.text);
+      final info = await ref.read(checkoutServiceProvider).validateCoupon(_coupon.text);
       if (!mounted) return;
       setState(() => _couponInfo = info);
     } on AppError catch (e) {
@@ -158,13 +148,11 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
         context: context,
         barrierDismissible: false,
         builder: (_) => AlertDialog(
-          title: const Text('سفارش ثبت شد',
-              textDirection: TextDirection.rtl),
+          title: const Text('سفارش ثبت شد', textDirection: TextDirection.rtl),
           content: Text(
             'شماره سفارش: ${order.number}\n'
-            'پیامک: «بسته شما رسید» — بدون نام محصول\n'
             '${order.appDiscountApplied ? 'تخفیف اپ اعمال شد\n' : ''}'
-            'پیک از محتوای بسته اطلاع ندارد.',
+            'پیگیری از بخش سفارش‌ها در دسترس است.',
             textDirection: TextDirection.rtl,
           ),
           actions: [
@@ -177,8 +165,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
       );
     } on AppError catch (e) {
       if (!mounted) return;
-      setState(() => _submitError =
-          e.code == 'endpoint_disabled' ? 'ثبت سفارش فعلا غیرفعال است' : e.message);
+      setState(() => _submitError = e.code == 'endpoint_disabled' ? 'ثبت سفارش فعلاً غیرفعال است' : e.message);
     } catch (_) {
       if (!mounted) return;
       setState(() => _submitError = 'ثبت سفارش ناموفق بود');
@@ -192,19 +179,14 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     final cart = ref.watch(cartProvider);
     final boot = ref.watch(bootProvider);
     final gateways = ref.watch(gatewaysProvider);
-    final notesOn = boot.maybeWhen(
-        data: (b) => b.config.orderNotesEnabled, orElse: () => true);
-    final minOrder = boot.maybeWhen(
-        data: (b) => b.store.minOrderAmount, orElse: () => 0.0);
-    final currency = boot.maybeWhen(
-        data: (b) => b.store.currencySymbol, orElse: () => 'تومان');
-    final decimals =
-        boot.maybeWhen(data: (b) => b.store.numDecimals, orElse: () => 0);
+    final notesOn = boot.maybeWhen(data: (b) => b.config.orderNotesEnabled, orElse: () => true);
+    final minOrder = boot.maybeWhen(data: (b) => b.store.minOrderAmount, orElse: () => 0.0);
+    final currency = boot.maybeWhen(data: (b) => b.store.currencySymbol, orElse: () => 'تومان');
+    final decimals = boot.maybeWhen(data: (b) => b.store.numDecimals, orElse: () => 0);
     final blocked = cart.subtotal < minOrder;
 
     if (!cart.loaded) {
-      return const Scaffold(
-          body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     if (cart.items.isEmpty) {
       return Scaffold(
@@ -213,12 +195,11 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('سبد خالی است',
-                  textDirection: TextDirection.rtl),
+              const Text('سبد خرید خالی است', textDirection: TextDirection.rtl),
               const SizedBox(height: 12),
               ElevatedButton(
                 onPressed: () => context.go('/catalog'),
-                child: const Text('رفتن به دسته بندی ها'),
+                child: const Text('رفتن به دسته‌بندی‌ها'),
               ),
             ],
           ),
@@ -227,9 +208,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     }
 
     final selectedRate = _rates.where((r) => r.id == _shipMethod).firstOrNull;
-    final total = cart.subtotal -
-        (_couponInfo?.amount ?? 0) +
-        (selectedRate?.cost ?? 0);
+    final total = cart.subtotal - (_couponInfo?.amount ?? 0) + (selectedRate?.cost ?? 0);
 
     return Scaffold(
       appBar: AppBar(title: const Text('تسویه حساب محرمانه')),
@@ -240,228 +219,154 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
           child: ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              const Text('بدون نام فروشگاه در هیچ مرحله‌ای',
-                  style: TextStyle(color: Colors.black87)),
-              const SizedBox(height: 12),
-              // Billing
-              const Text('مشخصات صورتحساب',
-                  style: TextStyle(fontWeight: FontWeight.w700)),
+              const Text('اطلاعات صورتحساب و ارسال', style: TextStyle(fontWeight: FontWeight.w700)),
               const SizedBox(height: 8),
               Row(
                 children: [
-                  Expanded(
-                      child: _field(_first, 'نام',
-                          validator: _req)),
+                  Expanded(child: _field(_first, 'نام', validator: _req)),
                   const SizedBox(width: 8),
-                  Expanded(
-                      child: _field(_last, 'نام خانوادگی',
-                          validator: _req)),
+                  Expanded(child: _field(_last, 'نام خانوادگی', validator: _req)),
                 ],
               ),
-              _field(_phone, 'موبایل',
-                  keyboard: TextInputType.phone,
-                  validator: _phoneReq,
-                  autofill: const [AutofillHints.telephoneNumber],
-                  maxLength: 11),
-              _field(_addr, 'آدرس',
-                  validator: _req,
-                  autofill: const [AutofillHints.streetAddressLine1]),
+              _field(_phone, 'موبایل', keyboard: TextInputType.phone, validator: _phoneReq, autofill: const [AutofillHints.telephoneNumber], maxLength: 11),
+              _field(_addr, 'آدرس', validator: _req, autofill: const [AutofillHints.streetAddressLine1]),
               Row(
                 children: [
                   Expanded(child: _field(_city, 'شهر', validator: _req)),
                   const SizedBox(width: 8),
-                  Expanded(
-                      child: _field(_post, 'کد پستی',
-                          validator: _postReq,
-                          keyboard: TextInputType.number,
-                          autofill: const [AutofillHints.postalCode],
-                          maxLength: 10)),
+                  Expanded(child: _field(_post, 'کد پستی', validator: _postReq, keyboard: TextInputType.number, autofill: const [AutofillHints.postalCode], maxLength: 10)),
                 ],
               ),
               CheckboxListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('آدرس تحویل مثل صورتحساب'),
+                title: const Text('آدرس تحویل همان صورتحساب'),
                 value: _copyShipping,
-                onChanged: (v) =>
-                    setState(() => _copyShipping = v ?? true),
+                onChanged: (v) => setState(() => _copyShipping = v ?? true),
               ),
               if (!_copyShipping) ...[
-                const Text('آدرس تحویل',
-                    style:
-                        TextStyle(fontWeight: FontWeight.w700)),
+                const Text('آدرس تحویل', style: TextStyle(fontWeight: FontWeight.w700)),
                 _field(_shipAddr, 'آدرس تحویل', validator: _req),
                 Row(
                   children: [
-                    Expanded(
-                        child: _field(_shipCity, 'شهر تحویل',
-                            validator: _req)),
+                    Expanded(child: _field(_shipCity, 'شهر تحویل', validator: _req)),
                     const SizedBox(width: 8),
-                    Expanded(
-                        child: _field(_shipPost, 'کد پستی',
-                            validator: _postReq,
-                            keyboard: TextInputType.number,
-                            maxLength: 10)),
+                    Expanded(child: _field(_shipPost, 'کد پستی', validator: _postReq, keyboard: TextInputType.number, maxLength: 10)),
                   ],
                 ),
               ],
               const SizedBox(height: 12),
-              // Discreet delivery (research fake-door)
-              const Text('تحویل محرمانه',
-                  style: TextStyle(fontWeight: FontWeight.w700)),
+              const Text('تحویل محرمانه', style: TextStyle(fontWeight: FontWeight.w700)),
               RadioListTile<DiscreetDelivery>(
                 title: Text(DiscreetDelivery.locker.label),
-                subtitle: const Text('پارک ملت، کد ۴ رقمی پیامک می‌شود'),
                 value: DiscreetDelivery.locker,
                 groupValue: _delivery,
-                onChanged: (v) =>
-                    setState(() => _delivery = v!),
+                onChanged: (v) => setState(() => _delivery = v!),
               ),
               RadioListTile<DiscreetDelivery>(
                 title: Text(DiscreetDelivery.courierNoLogo.label),
                 value: DiscreetDelivery.courierNoLogo,
                 groupValue: _delivery,
-                onChanged: (v) =>
-                    setState(() => _delivery = v!),
+                onChanged: (v) => setState(() => _delivery = v!),
               ),
               RadioListTile<DiscreetDelivery>(
                 title: Text(DiscreetDelivery.workAddress.label),
                 value: DiscreetDelivery.workAddress,
                 groupValue: _delivery,
-                onChanged: (v) =>
-                    setState(() => _delivery = v!),
+                onChanged: (v) => setState(() => _delivery = v!),
               ),
-              const Text('پیک از محتوای بسته اطلاع ندارد.',
-                  style: TextStyle(color: Colors.black87, fontSize: 12)),
               const SizedBox(height: 12),
-              // Shipping preview
               Row(
                 children: [
-                  const Text('هزینه ارسال',
-                      style: TextStyle(fontWeight: FontWeight.w700)),
+                  const Text('هزینه ارسال', style: TextStyle(fontWeight: FontWeight.w700)),
                   const Spacer(),
-                  TextButton(
-                    onPressed: _loadingRates ? null : _previewRates,
-                    child: Text(
-                        _loadingRates ? '...' : 'محاسبه'),
-                  ),
+                  TextButton(onPressed: _loadingRates ? null : _previewRates, child: Text(_loadingRates ? '...' : 'محاسبه')),
                 ],
               ),
               if (_ratesError != null)
-                Text(_ratesError!,
-                    style: const TextStyle(color: Colors.red)),
-                for (final r in _rates)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Text(_ratesError!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                ),
+              for (final r in _rates)
                 RadioListTile<String>(
                   title: Text(r.label.isNotEmpty ? r.label : r.id),
-                  subtitle: Text(formatPrice(r.cost,
-                      currency: currency, decimals: decimals)),
+                  subtitle: Text(formatPrice(r.cost, currency: currency, decimals: decimals)),
                   value: r.id,
                   groupValue: _shipMethod,
-                  onChanged: (v) =>
-                      setState(() => _shipMethod = v),
+                  onChanged: (v) => setState(() => _shipMethod = v),
                 ),
               const SizedBox(height: 12),
-              // Payment (offline only)
-              const Text('پرداخت (نقدی/دستی)',
-                  style: TextStyle(fontWeight: FontWeight.w700)),
+              const Text('پرداخت', style: TextStyle(fontWeight: FontWeight.w700)),
               gateways.when(
-                loading: () => const Padding(
-                  padding: EdgeInsets.all(8),
-                  child: LinearProgressIndicator(),
-                ),
+                loading: () => const Padding(padding: EdgeInsets.all(8), child: LinearProgressIndicator()),
                 error: (e, _) => Text(
-                    e is AppError && e.isDisabled
-                        ? 'پرداخت فعلا غیرفعال است'
-                        : 'خطا در بارگذاری روش‌ها',
-                    style: const TextStyle(color: Colors.red)),
+                  e is AppError && e.isDisabled ? 'پرداخت فعلاً غیرفعال است' : 'خطا در بارگذاری روش‌های پرداخت',
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
                 data: (list) {
                   if (list.isEmpty) {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('روش پرداخت آفلاینی فعال نیست',
-                            style: TextStyle(color: Colors.red)),
-                        TextButton(
-                          onPressed: () => ref.invalidate(gatewaysProvider),
-                          child: const Text('تلاش مجدد'),
-                        ),
+                        Text('روش پرداختی در دسترس نیست', style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                        TextButton(onPressed: () => ref.invalidate(gatewaysProvider), child: const Text('تلاش مجدد')),
                       ],
                     );
                   }
                   return DropdownButtonFormField<String>(
                     value: _gateway,
-                    items: list
-                        .map((g) => DropdownMenuItem(
-                            value: g.id,
-                            child: Text(g.title.isNotEmpty
-                                ? g.title
-                                : g.id)))
-                        .toList(),
-                    onChanged: (v) =>
-                        setState(() => _gateway = v),
-                    decoration: const InputDecoration(
-                        labelText: 'روش پرداخت'),
-                    validator: (v) =>
-                        v == null ? 'انتخاب کنید' : null,
+                    items: list.map((g) => DropdownMenuItem(value: g.id, child: Text(g.title.isNotEmpty ? g.title : g.id))).toList(),
+                    onChanged: (v) => setState(() => _gateway = v),
+                    decoration: const InputDecoration(labelText: 'روش پرداخت'),
+                    validator: (v) => v == null ? 'انتخاب کنید' : null,
                   );
                 },
               ),
-              const Text('نام در صورتحساب بانکی: RDV*Services',
-                  textDirection: TextDirection.rtl,
-                  style: TextStyle(fontSize: 12, color: Colors.black87)),
               const SizedBox(height: 12),
-              // Coupon
               Row(
                 children: [
-                  Expanded(
-                      child:
-                          _field(_coupon, 'کد تخفیف (اختیاری)')),
+                  Expanded(child: _field(_coupon, 'کد تخفیف (اختیاری)')),
                   const SizedBox(width: 8),
-                  ElevatedButton(
-                    onPressed: _validateCoupon,
-                    child: const Text('اعمال'),
-                  ),
+                  ElevatedButton(onPressed: _validateCoupon, child: const Text('اعمال')),
                 ],
               ),
               if (_couponError != null)
-                Text(_couponError!,
-                    style: const TextStyle(color: Colors.red)),
+                Padding(
+                  padding: const EdgeInsets.only(top: 6),
+                  child: Text(_couponError!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                ),
               if (_couponInfo != null)
-                Text(
-                    'تخفیف: ${formatPrice(_couponInfo!.amount, currency: currency, decimals: decimals)}',
-                    style: const TextStyle(color: Colors.green)),
+                Padding(
+                  padding: const EdgeInsets.only(top: 6),
+                  child: Text('تخفیف: ${formatPrice(_couponInfo!.amount, currency: currency, decimals: decimals)}',
+                      style: const TextStyle(color: Colors.green, fontWeight: FontWeight.w600)),
+                ),
               if (notesOn) ...[
                 const SizedBox(height: 8),
-                _field(_note, 'توضیح سفارش (اختیاری)',
-                    maxLines: 2),
+                _field(_note, 'توضیح سفارش (اختیاری)', maxLines: 2),
               ],
               const Divider(height: 32),
-              Text(
-                  'جمع سبد: ${formatPrice(cart.subtotal, currency: currency, decimals: decimals)}'),
+              Text('جمع سبد: ${formatPrice(cart.subtotal, currency: currency, decimals: decimals)}'),
               if (_couponInfo != null)
-                Text(
-                    'تخفیف: −${formatPrice(_couponInfo!.amount, currency: currency, decimals: decimals)}',
+                Text('تخفیف: -${formatPrice(_couponInfo!.amount, currency: currency, decimals: decimals)}',
                     style: const TextStyle(color: Colors.green)),
+              Text('ارسال: ${formatPrice(selectedRate?.cost ?? 0, currency: currency, decimals: decimals)}'),
               Text(
-                  'ارسال: ${formatPrice(selectedRate?.cost ?? 0, currency: currency, decimals: decimals)}'),
-              Text(
-                'قابل پرداخت (تقریبی — مبلغ نهایی سرور): ${formatPrice(total, currency: currency, decimals: decimals)}',
-                style: const TextStyle(
-                    fontWeight: FontWeight.w800, fontSize: 16),
+                'قابل پرداخت: ${formatPrice(total, currency: currency, decimals: decimals)}',
+                style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
               ),
               if (blocked)
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
                   child: Text(
                     'حداقل مبلغ سفارش ${formatPrice(minOrder, currency: currency, decimals: decimals)} است',
-                    style: const TextStyle(color: Colors.red),
+                    style: TextStyle(color: Theme.of(context).colorScheme.error),
                   ),
                 ),
               if (_submitError != null)
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
-                  child: Text(_submitError!,
-                      style:
-                          const TextStyle(color: Colors.red)),
+                  child: Text(_submitError!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
                 ),
               const SizedBox(height: 12),
               SizedBox(
@@ -469,15 +374,9 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                 child: ElevatedButton(
                   onPressed: (_submitting || blocked) ? null : _submit,
                   child: Text(_submitting
-                      ? 'در حال ثبت…'
-                      : 'ثبت سفارش • ${formatPrice(total, currency: currency, decimals: decimals)}'),
+                      ? 'در حال ثبت...'
+                      : 'ثبت سفارش — ${formatPrice(total, currency: currency, decimals: decimals)}'),
                 ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'آیکون اپ: «یادداشت‌ها» • اعلان بدون پیش‌نمایش',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.black87, fontSize: 12),
               ),
             ],
           ),
@@ -486,14 +385,11 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     );
   }
 
-  String? _req(String? v) =>
-      (v == null || v.trim().isEmpty) ? 'الزامی' : null;
+  String? _req(String? v) => (v == null || v.trim().isEmpty) ? 'الزامی' : null;
 
   String? _phoneReq(String? v) {
     if (v == null || v.trim().isEmpty) return 'الزامی';
-    if (!RegExp(r'^09\d{9}$').hasMatch(v.trim())) {
-      return 'موبایل معتبر وارد کنید (09...)';
-    }
+    if (!RegExp(r'^09\d{9}$').hasMatch(v.trim())) return 'موبایل معتبر وارد کنید (09...)';
     return null;
   }
 
@@ -520,10 +416,15 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
         maxLength: maxLength,
         decoration: InputDecoration(
           labelText: label,
-          border:
-              OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           isDense: true,
           counterText: '',
+          errorStyle: TextStyle(
+            color: Theme.of(context).colorScheme.error,
+            fontSize: 12.5,
+            height: 1.3,
+          ),
+          errorMaxLines: 2,
         ),
       ),
     );

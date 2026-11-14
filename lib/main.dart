@@ -20,6 +20,7 @@ import 'screens/profile_page.dart';
 import 'screens/register_page.dart';
 import 'screens/search_page.dart';
 import 'screens/splash_page.dart';
+import 'widgets/animated_brand_background.dart';
 import 'widgets/app_nav.dart';
 import 'widgets/shell_app_bar.dart';
 
@@ -55,19 +56,33 @@ GoRouter createRouter(AuthState authState, {String initialLocation = '/splash'})
           child: const OnboardingPage(),
         ),
       ),
-      GoRoute(
-        path: '/login',
-        pageBuilder: (context, state) => directionalSlidePage(
-          state: state,
-          child: const LoginPage(),
+      ShellRoute(
+        pageBuilder: (context, state, child) => CustomTransitionPage<void>(
+          key: state.pageKey,
+          child: Scaffold(
+            backgroundColor: Colors.transparent,
+            body: AnimatedBrandBackground(child: child),
+          ),
+          transitionDuration: Duration.zero,
+          reverseTransitionDuration: Duration.zero,
+          transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
         ),
-      ),
-      GoRoute(
-        path: '/register',
-        pageBuilder: (context, state) => directionalSlidePage(
-          state: state,
-          child: const RegisterPage(),
-        ),
+        routes: [
+          GoRoute(
+            path: '/login',
+            pageBuilder: (context, state) => directionalSlidePage(
+              state: state,
+              child: const LoginPage(),
+            ),
+          ),
+          GoRoute(
+            path: '/register',
+            pageBuilder: (context, state) => directionalSlidePage(
+              state: state,
+              child: const RegisterPage(),
+            ),
+          ),
+        ],
       ),
       ShellRoute(
         builder: (context, state, child) {
@@ -228,8 +243,18 @@ class MainApp extends StatelessWidget {
         useMaterial3: true,
         fontFamily: 'IRANSans',
         fontFamilyFallback: const ['Vazirmatn', 'sans-serif'],
-        scaffoldBackgroundColor: const Color(0xFFC30960),
-        canvasColor: const Color(0xFFC30960),
+        scaffoldBackgroundColor: Colors.transparent,
+        canvasColor: Colors.transparent,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.transparent,
+          surfaceTintColor: Colors.transparent,
+          elevation: 0,
+        ),
+        cardTheme: const CardThemeData(
+          color: Colors.transparent,
+          surfaceTintColor: Colors.transparent,
+          elevation: 0,
+        ),
       ),
     );
   }

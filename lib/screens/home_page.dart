@@ -175,7 +175,6 @@ class _HomePageState extends ConsumerState<HomePage> {
                       margin: const EdgeInsets.only(top: 12),
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.green.shade50,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(v.label,

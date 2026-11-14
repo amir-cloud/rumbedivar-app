@@ -36,21 +36,20 @@ class PlaceholderPage extends StatelessWidget {
 }
 
 class FriendlyErrorPage extends StatelessWidget {
-  const FriendlyErrorPage(
-      {super.key, required this.message, this.code});
+  const FriendlyErrorPage({super.key, required this.message, this.code});
   final String message;
   final String? code;
 
   @override
   Widget build(BuildContext context) {
     final fa = switch (code) {
-      'endpoint_disabled' => 'این بخش فعلا غیرفعال است',
-      'wc_inactive' => 'فروشگاه موقتا در دسترس نیست',
-      'not_found' => 'محصول یا سفارش یافت نشد',
-      'unauthorized' => 'نشست منقضی شد — لطفا دوباره وارد شوید',
-      'network' => 'خطا در اتصال — اینترنت را بررسی کنید',
+      'endpoint_disabled' => 'این بخش فعلاً غیرفعال است',
+      'wc_inactive' => 'فروشگاه در دسترس نیست',
+      'not_found' => 'موردی یافت نشد',
+      'unauthorized' => 'نشست منقضی شده — لطفاً دوباره وارد شوید',
+      'network' => 'خطا در اتصال — اتصال اینترنت را بررسی کنید',
       _ => message.startsWith('AppError') || message.contains('Exception')
-          ? 'خطایی رخ داد — دوباره تلاش کنید'
+          ? 'خطایی رخ داد — لطفاً دوباره تلاش کنید'
           : message,
     };
     return Scaffold(

@@ -7,7 +7,7 @@ class AppError implements Exception {
   const AppError(this.code, this.message, [this.statusCode]);
 
   factory AppError.fromResponse(int status, Map<String, dynamic>? body) {
-    final msg = body?['message']?.toString() ?? 'Request failed ($status)';
+    final msg = body?['message']?.toString() ?? 'خطا در ارتباط با سرور ($status)';
     final code = body?['code']?.toString() ?? 'unknown';
     if (status == 401) return AppError('unauthorized', msg, status);
     if (status == 403 && code == 'endpoint_disabled') {
@@ -21,8 +21,8 @@ class AppError implements Exception {
     return AppError(code, msg, status);
   }
 
-  factory AppError.network(Object e) =>
-      const AppError('network', 'خطا در اتصال — اینترنت را بررسی کنید');
+  factory AppError.network(Object e) => const AppError(
+      'network', 'خطا در اتصال به اینترنت. لطفاً اتصال خود را بررسی کنید.');
 
   bool get isAuth => code == 'unauthorized';
   bool get isDisabled => code == 'endpoint_disabled';

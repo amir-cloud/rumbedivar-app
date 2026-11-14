@@ -98,9 +98,9 @@ class ApiClient {
     try {
       res = await call();
     } on TimeoutException {
-      throw const AppError('network', 'اتصال کند است — دوباره تلاش کنید');
+      throw const AppError('network', 'مهلت اتصال به پایان رسید. لطفاً دوباره تلاش کنید.');
     } catch (_) {
-      throw const AppError('network', 'خطا در اتصال — اینترنت را بررسی کنید');
+      throw const AppError('network', 'خطا در اتصال به اینترنت. لطفاً اتصال خود را بررسی کنید.');
     }
     dynamic decoded;
     try {

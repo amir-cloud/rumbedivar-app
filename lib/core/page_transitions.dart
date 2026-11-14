@@ -1,23 +1,23 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 /// Which way the page stack is moving.
 enum PageTransitionDirection { forward, backward }
 
-/// Remembers where the user has been so every navigation — `go()`, `push()`
-/// or `pop()` — animates in the right direction.
+/// Remembers where the user has been so every navigation â€” `go()`, `push()`
+/// or `pop()` â€” animates in the right direction.
 ///
 /// `go()` replaces the page stack instead of pushing onto it, so without
-/// this every navigation (including going "back", e.g. product → catalog,
-/// register → login, or switching shell tabs) slides in from the same side.
+/// this every navigation (including going "back", e.g. product â†’ catalog,
+/// register â†’ login, or switching shell tabs) slides in from the same side.
 /// The tracker keeps a history of visited locations: moving somewhere new
 /// is [PageTransitionDirection.forward], returning to the previously
 /// visited location is [PageTransitionDirection.backward].
 ///
 /// Wired up once per router via [watchRouterForDirection]; read (never
 /// written) by [directionalSlidePage]. Auth pages, shell tabs and pushed
-/// pages all share the one instance, so the whole app — auth flow
-/// included — moves as a single consistent back-and-forth stack.
+/// pages all share the one instance, so the whole app â€” auth flow
+/// included â€” moves as a single consistent back-and-forth stack.
 class PageTransitionTracker extends ChangeNotifier {
   PageTransitionTracker._();
   static final PageTransitionTracker instance = PageTransitionTracker._();
@@ -73,7 +73,7 @@ class PageTransitionTracker extends ChangeNotifier {
 }
 
 /// Connects [router] to [PageTransitionTracker.instance] so every location
-/// change — `go()`, `push()`, `pop()` and redirects — updates the direction
+/// change â€” `go()`, `push()`, `pop()` and redirects â€” updates the direction
 /// before the new page builds its transition.
 void watchRouterForDirection(GoRouter router) {
   void update() {
@@ -88,7 +88,7 @@ void watchRouterForDirection(GoRouter router) {
 
 /// Back-and-forth page transition shared by every route.
 ///
-/// Plain directional slide, nothing else: no blur, no zoom, no dimming —
+/// Plain directional slide, nothing else: no blur, no zoom, no dimming â€”
 /// the page underneath simply stays put.
 ///
 /// * Forward: the new page slides in from [enterOffset] (default: right)
@@ -96,25 +96,24 @@ void watchRouterForDirection(GoRouter router) {
 /// * Back (`go()` to the previous location, or a pop): the new page slides
 ///   in from the mirrored side.
 ///
-/// Keep using [directionalSlidePage] for every route — auth pages included —
+/// Keep using [directionalSlidePage] for every route â€” auth pages included â€”
 /// so the whole app moves as one consistent stack.
+/// Smooth directional transition: fade + slight slide.
+/// Handles both incoming and outgoing animations to avoid overlapping pages.
 class PageTransitionDurations {
-  static const Duration forward = Duration(milliseconds: 300);
-  static const Duration reverse = Duration(milliseconds: 300);
+  static const Duration forward = Duration(milliseconds: 280);
+  static const Duration reverse = Duration(milliseconds: 240);
 }
 
 /// Builds the app's standard directional page for go_router routes.
-///
-/// The slide side is captured from [PageTransitionTracker.instance] at
-/// page-build time, which [watchRouterForDirection] has already updated for
-/// this navigation.
 CustomTransitionPage<void> directionalSlidePage({
   required GoRouterState state,
   required Widget child,
-  Offset enterOffset = const Offset(1.0, 0.0),
+  Offset enterOffset = const Offset(0.04, 0.0),
 }) {
   final backward = PageTransitionTracker.instance.goingBack;
-  final enterBegin = backward ? const Offset(-1.0, 0.0) : enterOffset;
+  final dx = enterOffset.dx.abs().clamp(0.03, 0.08);
+  final enterBegin = backward ? Offset(-dx, 0.0) : Offset(dx, 0.0);
 
   return CustomTransitionPage<void>(
     key: state.pageKey,
@@ -122,21 +121,32 @@ CustomTransitionPage<void> directionalSlidePage({
     transitionDuration: PageTransitionDurations.forward,
     reverseTransitionDuration: PageTransitionDurations.reverse,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      final enterCurve = CurvedAnimation(
+      final inCurve = CurvedAnimation(
         parent: animation,
         curve: Curves.easeOutCubic,
         reverseCurve: Curves.easeInCubic,
       );
-      final enterSlide = Tween<Offset>(begin: enterBegin, end: Offset.zero);
-      final enterFade = Tween<double>(begin: 0.92, end: 1.0);
+      final outCurve = CurvedAnimation(
+        parent: secondaryAnimation,
+        curve: Curves.easeOutCubic,
+        reverseCurve: Curves.easeInCubic,
+      );
 
-      return Material(
-        color: const Color(0xFFC30960),
-        child: FadeTransition(
-          opacity: enterFade.animate(enterCurve),
-          child: SlideTransition(
-            position: enterSlide.animate(enterCurve),
-            child: child,
+      final slideIn = Tween<Offset>(begin: enterBegin, end: Offset.zero).animate(inCurve);
+      final slideOut = Tween<Offset>(begin: Offset.zero, end: Offset(-enterBegin.dx * 0.7, 0))
+          .animate(outCurve);
+      final fadeOut = Tween<double>(begin: 1.0, end: 0.0).animate(outCurve);
+
+      return FadeTransition(
+        opacity: fadeOut,
+        child: SlideTransition(
+          position: slideOut,
+          child: FadeTransition(
+            opacity: inCurve,
+            child: SlideTransition(
+              position: slideIn,
+              child: child,
+            ),
           ),
         ),
       );

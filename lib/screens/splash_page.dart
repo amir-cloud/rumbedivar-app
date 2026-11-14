@@ -61,42 +61,27 @@ class _SplashPageState extends ConsumerState<SplashPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
+            SizedBox(
               width: 180,
               height: 180,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.25),
-                    blurRadius: 30,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
-              ),
               child: ClipOval(
-                child: Image.asset('assets/images/logo.png',
-                    fit: BoxFit.cover),
+                child: Image.asset('assets/images/logo.png', fit: BoxFit.cover),
               ),
             ),
             const SizedBox(height: 32),
-            const Text('روم به دیوار',
-                style: TextStyle(
-                    fontSize: 36,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white),
-                textDirection: TextDirection.rtl),
+            const Text(
+              'Rumbedivar',
+              style: TextStyle(fontSize: 36, fontWeight: FontWeight.w800),
+              textDirection: TextDirection.rtl,
+            ),
             const SizedBox(height: 16),
-            Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(30),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+              child: Text(
+                'Welcome',
+                style: TextStyle(fontSize: 16),
+                textDirection: TextDirection.rtl,
               ),
-              child: const Text('هرچیزی که روتون نمیشه بخرید!',
-                  style: TextStyle(fontSize: 16, color: Colors.white),
-                  textDirection: TextDirection.rtl),
             ),
           ],
         ),

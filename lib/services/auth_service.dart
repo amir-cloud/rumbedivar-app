@@ -29,17 +29,16 @@ class AuthService {
           return result;
         }
         return AuthResult.failure(
-            body['message']?.toString() ?? 'Login failed');
+            body['message']?.toString() ?? 'ورود ناموفق بود');
       }
-      return AuthResult.failure('Unexpected response');
+      return AuthResult.failure('پاسخ نامعتبر از سرور');
     } on AppError catch (e) {
       if (e.code == 'rate_limited') {
-        return AuthResult.failure(
-            'تلاش زیاد — لطفا چند دقیقه بعد دوباره امتحان کنید');
+        return AuthResult.failure('تلاش زیاد — لطفاً کمی بعد دوباره امتحان کنید');
       }
       return AuthResult.failure(e.message);
     } catch (_) {
-      return AuthResult.failure('خطا در اتصال — اینترنت را بررسی کنید');
+      return AuthResult.failure('خطا در اتصال. لطفاً دوباره تلاش کنید');
     }
   }
 
@@ -58,16 +57,16 @@ class AuthService {
           return result;
         }
         return AuthResult.failure(
-            body['message']?.toString() ?? 'Registration failed');
+            body['message']?.toString() ?? 'ثبت‌نام ناموفق بود');
       }
-      return AuthResult.failure('Unexpected response');
+      return AuthResult.failure('پاسخ نامعتبر از سرور');
     } on AppError catch (e) {
       if (e.code == 'registration_disabled') {
-        return AuthResult.failure('ثبت‌نام فعلا غیرفعال است');
+        return AuthResult.failure('ثبت‌نام فعلاً غیرفعال است');
       }
       return AuthResult.failure(e.message);
     } catch (_) {
-      return AuthResult.failure('خطا در اتصال — اینترنت را بررسی کنید');
+      return AuthResult.failure('خطا در اتصال. لطفاً دوباره تلاش کنید');
     }
   }
 

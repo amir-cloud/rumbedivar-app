@@ -78,7 +78,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                   onPressed: _finish,
                   child: const Text(
                     'رد کردن',
-                    style: TextStyle(color: Colors.white, fontSize: 15),
+                    style: TextStyle(fontSize: 15),
                   ),
                 ),
               ),
@@ -104,7 +104,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                           width: active ? 22 : 8,
                           height: 8,
                           decoration: BoxDecoration(
-                            color: active ? Colors.white : Colors.white.withValues(alpha: 0.45),
+                            color: active ? Colors.black54 : Colors.black26,
                             borderRadius: BorderRadius.circular(8),
                           ),
                         );
@@ -125,9 +125,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                             );
                           }
                         },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: const Color(0xFFC30960),
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.transparent, elevation: 0, shadowColor: Colors.transparent, 
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
@@ -165,7 +163,6 @@ class _SlideView extends StatelessWidget {
               height: 240,
               width: 240,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(24),
               ),
               clipBehavior: Clip.antiAlias,
@@ -173,11 +170,11 @@ class _SlideView extends StatelessWidget {
                 imageUrl: slide.image,
                 fit: BoxFit.cover,
                 placeholder: (_, __) => const Center(
-                  child: CircularProgressIndicator(color: Colors.white),
+                  child: CircularProgressIndicator(),
                 ),
                 errorWidget: (_, __, ___) => const Icon(
                   Icons.image_outlined,
-                  color: Colors.white70,
+                  color: null,
                   size: 64,
                 ),
               ),
@@ -186,11 +183,10 @@ class _SlideView extends StatelessWidget {
             Container(
               height: 160,
               width: 160,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.15),
+              decoration: const BoxDecoration(
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.auto_awesome, color: Colors.white, size: 64),
+              child: const Icon(Icons.auto_awesome, size: 64),
             ),
           const SizedBox(height: 32),
           if (slide.title.isNotEmpty)
@@ -201,7 +197,6 @@ class _SlideView extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.w800,
-                color: Colors.white,
               ),
             ),
           if (slide.title.isNotEmpty && slide.content.isNotEmpty)
@@ -214,7 +209,6 @@ class _SlideView extends StatelessWidget {
               style: TextStyle(
                 fontSize: 16,
                 height: 1.6,
-                color: Colors.white.withValues(alpha: 0.95),
               ),
             ),
         ],
