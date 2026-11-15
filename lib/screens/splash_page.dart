@@ -1,4 +1,5 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -20,6 +21,13 @@ class _SplashPageState extends ConsumerState<SplashPage> {
   @override
   void initState() {
     super.initState();
+    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+      systemNavigationBarColor: Color(0xFFF83389),
+      systemNavigationBarIconBrightness: Brightness.light,
+      systemNavigationBarDividerColor: Colors.transparent,
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+    ));
     _decide();
   }
 
@@ -39,13 +47,22 @@ class _SplashPageState extends ConsumerState<SplashPage> {
       if (!seen && boot != null) {
         final landing = boot.landing;
         if (landing.onboardingEnabled && landing.onboardingSlides.isNotEmpty) {
+          // Keep brand nav color for onboarding/login/register flow.
           context.go('/onboarding');
           return;
         }
       }
       if (token != null && token.isNotEmpty) {
+        SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+          systemNavigationBarColor: Colors.white,
+          systemNavigationBarIconBrightness: Brightness.dark,
+          systemNavigationBarDividerColor: Colors.transparent,
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.dark,
+        ));
         context.go('/home');
       } else {
+        // Keep brand nav color for login/register flow.
         context.go('/login');
       }
     } catch (_) {

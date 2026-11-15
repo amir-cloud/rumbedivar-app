@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -59,9 +60,18 @@ GoRouter createRouter(AuthState authState, {String initialLocation = '/splash'})
       ShellRoute(
         pageBuilder: (context, state, child) => CustomTransitionPage<void>(
           key: state.pageKey,
-          child: Scaffold(
-            backgroundColor: Colors.transparent,
-            body: AnimatedBrandBackground(child: child),
+          child: AnnotatedRegion<SystemUiOverlayStyle>(
+            value: const SystemUiOverlayStyle(
+              systemNavigationBarColor: Color(0xFFF83389),
+              systemNavigationBarIconBrightness: Brightness.light,
+              systemNavigationBarDividerColor: Colors.transparent,
+              statusBarColor: Colors.transparent,
+              statusBarIconBrightness: Brightness.light,
+            ),
+            child: Scaffold(
+              backgroundColor: Colors.transparent,
+              body: AnimatedBrandBackground(child: child),
+            ),
           ),
           transitionDuration: Duration.zero,
           reverseTransitionDuration: Duration.zero,
@@ -86,10 +96,19 @@ GoRouter createRouter(AuthState authState, {String initialLocation = '/splash'})
       ),
       ShellRoute(
         builder: (context, state, child) {
-          return Scaffold(
-            appBar: ShellAppBar(location: state.uri.path),
-            body: child,
-            bottomNavigationBar: const AppBottomNav(),
+          return AnnotatedRegion<SystemUiOverlayStyle>(
+            value: const SystemUiOverlayStyle(
+              systemNavigationBarColor: Colors.white,
+              systemNavigationBarIconBrightness: Brightness.dark,
+              systemNavigationBarDividerColor: Colors.transparent,
+              statusBarColor: Colors.transparent,
+              statusBarIconBrightness: Brightness.dark,
+            ),
+            child: Scaffold(
+              appBar: ShellAppBar(location: state.uri.path),
+              body: child,
+              bottomNavigationBar: const AppBottomNav(),
+            ),
           );
         },
         routes: [
