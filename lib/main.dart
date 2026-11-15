@@ -262,19 +262,21 @@ class MainApp extends StatelessWidget {
         useMaterial3: true,
         fontFamily: 'IRANSans',
         fontFamilyFallback: const ['Vazirmatn', 'sans-serif'],
-        scaffoldBackgroundColor: Colors.transparent,
-        canvasColor: Colors.transparent,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.transparent,
-          surfaceTintColor: Colors.transparent,
-          elevation: 0,
-        ),
-        cardTheme: const CardThemeData(
-          color: Colors.transparent,
-          surfaceTintColor: Colors.transparent,
-          elevation: 0,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFFC30960),
+          brightness: Brightness.light,
         ),
       ),
+      darkTheme: ThemeData(
+        useMaterial3: true,
+        fontFamily: 'IRANSans',
+        fontFamilyFallback: const ['Vazirmatn', 'sans-serif'],
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFFC30960),
+          brightness: Brightness.dark,
+        ),
+      ),
+      themeMode: ThemeMode.system,
     );
   }
 }
