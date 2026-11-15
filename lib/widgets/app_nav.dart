@@ -38,7 +38,7 @@ class AppBottomNav extends ConsumerWidget {
     final items = <({String route, IconData icon, String label})>[
       (route: '/home', icon: Icons.home_outlined, label: 'خانه'),
       if (_visible(toggles, _catalogKeys))
-        (route: '/catalog', icon: Icons.grid_view_outlined, label: 'دسته بندی ها'),
+        (route: '/catalog', icon: Icons.grid_view_outlined, label: 'دسته‌بندی‌ها'),
       if (_visible(toggles, _catalogKeys))
         (route: '/search', icon: Icons.search, label: 'جستجو'),
       if (_visible(toggles, _checkoutKeys))
@@ -55,8 +55,6 @@ class AppBottomNav extends ConsumerWidget {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: BottomNavigationBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
         currentIndex: index,
         type: BottomNavigationBarType.fixed,
         onTap: (i) {

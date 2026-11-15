@@ -58,7 +58,7 @@ class ShellAppBar extends ConsumerWidget implements PreferredSizeWidget {
             IconButton(
               tooltip: 'خروج',
               onPressed: () => _logout(context, ref),
-              icon: const Icon(Icons.logout),
+              icon: Transform.flip(flipX: true, child: const Icon(Icons.logout)),
             ),
           ],
         );
@@ -87,7 +87,7 @@ class ShellAppBar extends ConsumerWidget implements PreferredSizeWidget {
           actions: [
             IconButton(
               tooltip: 'خروج',
-              icon: const Icon(Icons.logout),
+              icon: Transform.flip(flipX: true, child: const Icon(Icons.logout)),
               onPressed: () => _logout(context, ref),
             ),
           ],

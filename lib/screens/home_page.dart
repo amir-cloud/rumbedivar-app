@@ -52,10 +52,10 @@ class _HomePageState extends ConsumerState<HomePage> {
           children: [
             me.when(
               loading: () => const SizedBox.shrink(),
-              error: (_, __) => const Text(
+              error: (_, __) => Text(
                 'خطا در بارگذاری حساب — برای تلاش مجدد بکشید',
                 textDirection: TextDirection.rtl,
-                style: TextStyle(fontSize: 12, color: Colors.white),
+                style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.error),
               ),
               data: (u) => Text(
                 'خوش آمدید ${u?.displayName ?? u?.username ?? ''}',
@@ -98,9 +98,9 @@ class _HomePageState extends ConsumerState<HomePage> {
             SwitchListTile(
               title: const Text('اعلان بدون پیش‌نمایش',
                   textDirection: TextDirection.rtl),
-              subtitle: const Text('متن پیامک بدون نام محصول',
+              subtitle: Text('متن پیامک بدون نام محصول',
                   textDirection: TextDirection.rtl,
-                  style: TextStyle(fontSize: 11, color: Colors.white)),
+                  style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
               value: _noPreview,
               onChanged: (v) async {
                 await _lock.setNoPreviewEnabled(v);
@@ -134,7 +134,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                           fontSize: 22, fontWeight: FontWeight.w800)),
                   const SizedBox(height: 6),
                   Text(landing.heroSubtitle,
-                      style: const TextStyle(color: Colors.black87)),
+                      style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
                   if ((landing.heroImage as String).isNotEmpty) ...[
                     const SizedBox(height: 12),
                     ClipRRect(
@@ -211,8 +211,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                 style: TextStyle(fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             if (featured.isEmpty)
-              const Text('به‌زودی — از تنظیمات لندینگ WP اضافه کنید',
-                  style: TextStyle(color: Colors.black87))
+              Text('به‌زودی — از تنظیمات لندینگ WP اضافه کنید',
+                  style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant))
             else
               SizedBox(
                 height: 180,
@@ -257,16 +257,16 @@ class _HomePageState extends ConsumerState<HomePage> {
               ),
           ],
           if (landing.showBestsellers)
-            const Padding(
-              padding: EdgeInsets.only(top: 16),
+            Padding(
+              padding: const EdgeInsets.only(top: 16),
               child: Text('پرفروش‌ترین‌ها (به‌زودی: Step 3 کاتالوگ)',
-                  style: TextStyle(color: Colors.black87)),
+                  style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
             ),
           if (landing.showNewArrivals)
-            const Padding(
-              padding: EdgeInsets.only(top: 8),
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
               child: Text('جدیدترین‌ها (به‌زودی: Step 3 کاتالوگ)',
-                  style: TextStyle(color: Colors.black87)),
+                  style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
             ),
         ],
       ),

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -71,7 +71,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
             const SizedBox(height: 32),
             const Text(
               'Rumbedivar',
-              style: TextStyle(fontSize: 36, fontWeight: FontWeight.w800),
+              style: TextStyle(fontSize: 36, fontWeight: FontWeight.w800, color: Colors.white),
               textDirection: TextDirection.rtl,
             ),
             const SizedBox(height: 16),
@@ -79,7 +79,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
               padding: EdgeInsets.symmetric(horizontal: 24, vertical: 10),
               child: Text(
                 'Welcome',
-                style: TextStyle(fontSize: 16),
+                style: TextStyle(fontSize: 16, color: Colors.white),
                 textDirection: TextDirection.rtl,
               ),
             ),
