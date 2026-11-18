@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+﻿import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -57,7 +57,7 @@ class CatalogPage extends ConsumerWidget {
                       : const Icon(Icons.category_outlined),
                   title: Text(c.name),
                   subtitle: c.count > 0 ? Text('${c.count} محصول') : null,
-                  trailing: const Icon(Icons.chevron_right),
+                  trailing: const Icon(Icons.chevron_left),
                   onTap: () => context.push(
                     '/category/${c.id}',
                     extra: c.name,

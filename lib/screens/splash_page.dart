@@ -87,7 +87,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
             ),
             const SizedBox(height: 32),
             const Text(
-              'Rumbedivar',
+              'روم به دیوار',
               style: TextStyle(fontSize: 36, fontWeight: FontWeight.w800, color: Colors.white),
               textDirection: TextDirection.rtl,
             ),
@@ -95,7 +95,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 24, vertical: 10),
               child: Text(
-                'Welcome',
+                'هرچیزی که روتون نمیشه بخرید!',
                 style: TextStyle(fontSize: 16, color: Colors.white),
                 textDirection: TextDirection.rtl,
               ),

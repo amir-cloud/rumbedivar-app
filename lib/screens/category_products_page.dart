@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+﻿import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -63,7 +63,7 @@ class _CategoryProductsPageState extends ConsumerState<CategoryProductsPage> {
     }
     if (state.error != null && state.items.isEmpty) {
       final msg = state.error!.contains('endpoint_disabled')
-          ? 'این بخش فعلا غیرفعال است'
+          ? 'این بخش فعلاً غیرفعال است'
           : 'خطا در بارگذاری — دوباره تلاش کنید';
       return ListView(
         children: [
@@ -160,7 +160,7 @@ class _CategoryProductsPageState extends ConsumerState<CategoryProductsPage> {
                   Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis),
                   const SizedBox(height: 4),
                   Text(
-                    p.price.isNotEmpty ? '${p.price}' : '—',
+                    p.price.isNotEmpty ? p.price : '-',
                     style: TextStyle(
                       fontWeight: FontWeight.w700,
                       color: p.onSale ? Colors.red : null,

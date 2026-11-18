@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+﻿import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,7 +7,7 @@ import '../providers/app_providers.dart';
 import '../services/app_lock_service.dart';
 
 /// Home / Landing (Issue #2 Step 2).
-/// Driven by GET /landing + GET /store + GET /config — no app change needed
+/// Driven by GET /landing + GET /store + GET /config - no app change needed
 /// when WP Landing settings change. Preserves discreet entry + app-privacy.
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -55,7 +55,8 @@ class _HomePageState extends ConsumerState<HomePage> {
               error: (_, __) => Text(
                 'خطا در بارگذاری حساب — برای تلاش مجدد بکشید',
                 textDirection: TextDirection.rtl,
-                style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.error),
+                style: TextStyle(
+                    fontSize: 12, color: Theme.of(context).colorScheme.error),
               ),
               data: (u) => Text(
                 'خوش آمدید ${u?.displayName ?? u?.username ?? ''}',
@@ -72,7 +73,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const Text(
-                      'فروشگاه موقتا در دسترس نیست',
+                      'فروشگاه موقتاً در دسترس نیست',
                       textDirection: TextDirection.rtl,
                     ),
                     const SizedBox(height: 8),
@@ -98,9 +99,11 @@ class _HomePageState extends ConsumerState<HomePage> {
             SwitchListTile(
               title: const Text('اعلان بدون پیش‌نمایش',
                   textDirection: TextDirection.rtl),
-              subtitle: Text('متن پیامک بدون نام محصول',
+              subtitle: Text('متن پیام بدون نام محصول',
                   textDirection: TextDirection.rtl,
-                  style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                  style: TextStyle(
+                      fontSize: 11,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant)),
               value: _noPreview,
               onChanged: (v) async {
                 await _lock.setNoPreviewEnabled(v);
@@ -122,7 +125,7 @@ class _HomePageState extends ConsumerState<HomePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Hero — WP-driven
+          // Hero - WP-driven
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -134,7 +137,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                           fontSize: 22, fontWeight: FontWeight.w800)),
                   const SizedBox(height: 6),
                   Text(landing.heroSubtitle,
-                      style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                      style: TextStyle(
+                          color:
+                              Theme.of(context).colorScheme.onSurfaceVariant)),
                   if ((landing.heroImage as String).isNotEmpty) ...[
                     const SizedBox(height: 12),
                     ClipRRect(
@@ -176,6 +181,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
+                        color: Colors.green.withValues(alpha: 0.08),
                       ),
                       child: Text(v.label,
                           style: const TextStyle(color: Colors.green)),
@@ -211,8 +217,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                 style: TextStyle(fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             if (featured.isEmpty)
-              Text('به‌زودی — از تنظیمات لندینگ WP اضافه کنید',
-                  style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant))
+              Text('محصولی برای نمایش نیست',
+                  style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant))
             else
               SizedBox(
                 height: 180,
@@ -223,32 +230,41 @@ class _HomePageState extends ConsumerState<HomePage> {
                   itemBuilder: (_, i) {
                     final p = featured[i] as Map;
                     final img = (p['image'] ?? p['images'])?.toString() ?? '';
+                    final pid = p['id'];
                     return SizedBox(
                       width: 140,
-                      child: Card(
-                        child: Column(
-                          children: [
-                            Expanded(
-                              child: img.isNotEmpty
-                                  ? CachedNetworkImage(
-                                      imageUrl: img,
-                                      fit: BoxFit.cover,
-                                      memCacheWidth: 400,
-                                      maxWidthDiskCache: 800,
-                                      placeholder: (_, __) => Container(
-                                        color: Colors.black12,
-                                      ),
-                                      errorWidget: (_, __, ___) =>
-                                          const Icon(Icons.image),
-                                    )
-                                  : const Icon(Icons.image),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(8),
-                              child: Text('${p['name'] ?? ''}',
-                                  maxLines: 1, overflow: TextOverflow.ellipsis),
-                            ),
-                          ],
+                      child: InkWell(
+                        onTap: pid != null
+                            ? () => context.push('/product/$pid')
+                            : null,
+                        child: Card(
+                          clipBehavior: Clip.antiAlias,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Expanded(
+                                child: img.isNotEmpty
+                                    ? CachedNetworkImage(
+                                        imageUrl: img,
+                                        fit: BoxFit.cover,
+                                        memCacheWidth: 400,
+                                        maxWidthDiskCache: 800,
+                                        placeholder: (_, __) => Container(
+                                          color: Colors.black12,
+                                        ),
+                                        errorWidget: (_, __, ___) =>
+                                            const Icon(Icons.image),
+                                      )
+                                    : const Icon(Icons.image),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8),
+                                child: Text('${p['name'] ?? ''}',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     );
@@ -259,14 +275,16 @@ class _HomePageState extends ConsumerState<HomePage> {
           if (landing.showBestsellers)
             Padding(
               padding: const EdgeInsets.only(top: 16),
-              child: Text('پرفروش‌ترین‌ها (به‌زودی: Step 3 کاتالوگ)',
-                  style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+              child: Text('پرفروش‌ترین‌ها (به‌زودی)',
+                  style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant)),
             ),
           if (landing.showNewArrivals)
             Padding(
               padding: const EdgeInsets.only(top: 8),
-              child: Text('جدیدترین‌ها (به‌زودی: Step 3 کاتالوگ)',
-                  style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+              child: Text('جدیدترین‌ها (به‌زودی)',
+                  style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant)),
             ),
         ],
       ),

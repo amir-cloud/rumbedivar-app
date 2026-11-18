@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+﻿import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -59,7 +59,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             child: TextField(
               controller: _search,
               decoration: InputDecoration(
-                hintText: 'جستجوی محصول…',
+                hintText: 'جستجوی محصول...',
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: _search.text.isNotEmpty
                     ? IconButton(
@@ -89,14 +89,14 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   Widget _body(ProductsState state) {
     final hasQuery = _search.text.trim().isNotEmpty;
     if (!hasQuery && state.items.isEmpty && !state.loading && state.error == null) {
-      return const Center(child: Text('برای جستجو، نام محصول را وارد کنید'));
+      return const Center(child: Text('برای جستجو نام محصول را وارد کنید'));
     }
     if (state.loading && state.items.isEmpty) {
       return const SkeletonGrid();
     }
     if (state.error != null && state.items.isEmpty) {
       final msg = state.error!.contains('endpoint_disabled')
-          ? 'این بخش فعلا غیرفعال است'
+          ? 'این بخش فعلاً غیرفعال است'
           : 'خطا در جستجو — دوباره تلاش کنید';
       return Center(
         child: Column(
@@ -156,7 +156,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                   Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis),
                   const SizedBox(height: 4),
                   Text(
-                    p.price.isNotEmpty ? '${p.price}' : '—',
+                    p.price.isNotEmpty ? p.price : '-',
                     style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
                 ],

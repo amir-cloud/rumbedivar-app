@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+﻿import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -20,7 +20,13 @@ class ProductDetailPage extends ConsumerWidget {
         title: const Text('جزئیات محصول'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/catalog'),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/catalog');
+            }
+          },
         ),
       ),
       body: Directionality(
@@ -91,7 +97,7 @@ class ProductDetailPage extends ConsumerWidget {
                   Row(
                     children: [
                       Text(
-                        p.price.isNotEmpty ? p.price : '—',
+                        p.price.isNotEmpty ? p.price : '-',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
@@ -156,7 +162,7 @@ class ProductDetailPage extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  const Text('نظرها',
+                  const Text('نظرات',
                       style: TextStyle(
                           fontSize: 16, fontWeight: FontWeight.w700)),
                   const SizedBox(height: 8),
@@ -167,7 +173,7 @@ class ProductDetailPage extends ConsumerWidget {
                           child: CircularProgressIndicator()),
                     ),
                     error: (_, __) => const Text(
-                        'خطا در بارگذاری نظرها',
+                        'خطا در بارگذاری نظرات',
                         style: TextStyle(color: Colors.grey)),
                     data: (list) => list.isEmpty
                         ? const Text('هنوز نظری ثبت نشده',
@@ -178,7 +184,7 @@ class ProductDetailPage extends ConsumerWidget {
                                       child: ListTile(
                                         title: Text(r.reviewer.isNotEmpty
                                             ? r.reviewer
-                                            : 'ناشناس'),
+                                            : 'کاربر'),
                                         subtitle: Text(r.review),
                                         trailing: Text('★ ${r.rating}'),
                                       ),
